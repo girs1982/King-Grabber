@@ -1,0 +1,7742 @@
+#include <Arduino.h>
+//ESP-GRAB
+#include <stdio.h>;
+#include <string.h>;
+#include <stdlib.h>;
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+#include "driver/gpio.h"
+#include "driver/adc.h"
+#include "esp32-hal-ledc.h"
+#include <Preferences.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+
+
+Preferences prefs;
+Preferences prefsmem;
+
+#include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
+#include "esp_err.h"
+#include "esp_wifi.h"
+#include "esp_event.h"
+#include "esp_event_loop.h"
+#include "esp_task.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+#include "freertos/semphr.h"
+#include "esp_log.h"
+#include "sdkconfig.h"
+
+
+#include <ArduinoOTA.h> // Библиотека для OTA-прошивки
+#include <TimeLib.h>
+#include "math.h"
+#include <WiFi.h>
+#include <WiFiClient.h>
+#include <HTTPClient.h>
+#include <Wire.h>
+
+//wifii&server
+
+#include <OneWire.h>
+//////////////////////////////////////////////////////////////shlaki////////////////////////////////////////////////////
+
+
+
+
+
+
+#define D12 5
+
+#define D13 18
+
+#define D14 19
+
+/////////////////////////////////////////////////////parol
+int kiop3 = 0;
+int pam = 50;
+int passwordkg[6] ={8,3,2,1,9,0};
+
+int parolking = 0;
+int parolvvod[6] = {0,0,0,0,0,0};
+int i1p = 0;
+int yach = 0;
+
+int send_codekg = 0;
+int send_codezoy = 0;
+
+int send_code = 1;
+
+int yacheyka = 0;
+///////////////////////////////////////////////////////////////////////
+
+const char* ssid     = "Gansta-Paradise.guest";
+const char* password = "";
+ 
+const char* host = "www.gansta-paradise-forum.ru";
+
+int starres = 0;
+
+int pakiweb = 0;
+int bitnumber = 0;
+int shirt = 0;
+
+//wifii&server end/////////////////////////////////////
+
+//menu
+
+boolean backlight = true;
+int contrast=50;
+int kiop=0;
+int menuitem = 1;
+int page = 1;
+
+int pagero = 0;
+
+int smena = 1;//smena sig
+
+volatile boolean up = false;
+volatile boolean down = false;
+volatile boolean middle = false;
+
+int downButtonState = 0;
+int upButtonState = 0; 
+int selectButtonState = 0;         
+int lastDownButtonState = 0;
+int lastSelectButtonState = 0;
+int lastUpButtonState = 0;
+
+
+volatile boolean up2 = false;
+volatile boolean down2 = false;
+volatile boolean middle2 = false;
+
+int downButtonState2 = 0;
+int upButtonState2 = 0; 
+int selectButtonState2 = 0;         
+int lastDownButtonState2 = 0;
+int lastSelectButtonState2 = 0;
+int lastUpButtonState2 = 0;
+
+
+
+
+
+//menu end
+
+
+
+#define rxPin 13 //d13
+#define TX 12 //d12
+
+
+
+int ing = 0;
+int starlineCounter = 0;
+int starlinePreambula = 0;
+static long StarLineCode1 = 0; // first part
+static long StarLineCode2 = 0; // last part
+static long invertStarLineCode1 = 0; // first part
+static long invertStarLineCode2 = 0; // last part
+String code = "";
+boolean bValidPacket=false;
+int decodeMethod = 1;
+int lastRxValue = 0;
+int tempRxValue = 0;
+unsigned long lastRxTime = 0;
+unsigned long tempTime = 0;
+ 
+//keeloq
+int keeloqHeader=0;
+
+int keeloqCounter = 0;
+
+int starlineZCounter = 0;
+
+int starlineZpreambulaCounter = 0;
+int keeloqPreambula = 0;
+
+int stralineHeader=0;
+
+
+static long keeloqCode1 = 0; // first part
+static long keeloqCode2 = 0; // last part
+static long invertkeeloqCode1 = 0; // first part
+static long invertkeeloqCode2 = 0; // last part
+String keecode = "";
+
+
+boolean keebValidPacket=false;
+
+int keelastRxValue = 0;
+int keetempRxValue = 0;
+unsigned long keelastRxTime = 0;
+unsigned long keetempTime = 0;
+
+//пробуем выброс
+//keelog start
+unsigned long difTime = 0;
+unsigned long difTime2 = 0;
+int keelog_state = 0;
+int keelogCounter = 0;
+byte keelog_code[9];
+byte keelog_codePAK2[9];
+byte keelog_codePAK1[9];
+byte hugaz[9];
+byte hugazk[9];
+byte hugazi[9];
+byte starline_code[9];
+byte starline_codePAK2[9];
+byte starline_codePAK1[9];
+
+
+
+byte memkee[30];
+byte memsta[30];
+
+
+
+byte webpak2[9];
+byte webpak1[9];
+
+
+
+int starline_state = 0;
+byte kefang[9];
+
+
+byte starline_codePAK2zapis[9];
+byte starline_codePAK1zapis[9];
+
+byte starline_codePAK2zapisSBTR[9];
+byte starline_codePAK1zapisSBTR[9];
+
+
+byte keelog_codePAK2zapis[9];
+byte keelog_codePAK1zapis[9];
+
+
+byte keelog_codePAK2zapisSBTR[9];
+byte keelog_codePAK1zapisSBTR[9];
+
+byte hugazS[9];
+byte hugaziS[9];
+
+byte hugazK[9];
+byte hugaziK[9];
+//////////joystic
+
+const uint8_t vbatPin = 34;
+float VBAT;
+
+ const uint8_t vbatPinY = 35;
+float VBATY;
+
+
+/////////////////////////////////////////////////VVODNIE
+
+byte VVOD1[9];
+byte VVOD2[9];
+
+String readString;
+// --------------------
+byte CODE[8];
+int x=0;
+
+int k=0;//schet keeloq 
+int kk  =0; //shet star line
+
+int starkk = 0;
+
+//lcd
+
+//#include <SPI.h>
+
+
+// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+#define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+#define NUMFLAKES 10
+#define XPOS 0
+#define YPOS 1
+#define DELTAY 2
+
+
+#define LOGO16_GLCD_HEIGHT 16
+#define LOGO16_GLCD_WIDTH  16
+
+
+
+
+
+
+const unsigned char PROGMEM LOGO  [] = {
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x41, 0x01,
+0x00, 0x00, 0x01, 0xF0, 0x00, 0x00, 0xF8, 0x00, 0x00, 0x1C, 0x10, 0x60, 0x00, 0x31, 0x01, 0xF0,
+0x00, 0x00, 0x60, 0x00, 0x00, 0x60, 0x00, 0x00, 0x7C, 0x11, 0x80, 0x00, 0x39, 0x00, 0x38, 0x00,
+0x00, 0x70, 0x00, 0x00, 0xE0, 0x00, 0x00, 0xC0, 0x13, 0x80, 0x00, 0x19, 0x80, 0x0E, 0x01, 0x80,
+0x7C, 0x06, 0x01, 0xF0, 0x06, 0x03, 0x80, 0x33, 0x00, 0x00, 0x1D, 0x80, 0x03, 0xC0, 0xC0, 0x7F,
+0x06, 0x07, 0xF0, 0x08, 0x1E, 0x00, 0x37, 0x00, 0x00, 0x8F, 0x90, 0x01, 0xF8, 0x71, 0xFF, 0xC7,
+0x1F, 0xFC, 0x70, 0xFC, 0x01, 0x3E, 0x20, 0x03, 0xEF, 0x30, 0x00, 0x7F, 0xFF, 0xFF, 0xFF, 0xFF,
+0xFF, 0xFF, 0xF0, 0x01, 0x9E, 0xF8, 0x07, 0xFF, 0x70, 0x00, 0x3F, 0xFB, 0xE4, 0x9B, 0x6D, 0xFF,
+0x7F, 0xE0, 0x00, 0xDF, 0xFC, 0x00, 0x7F, 0xE0, 0x00, 0x1F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+0xA0, 0x00, 0xFF, 0xC0, 0x00, 0x3F, 0xE0, 0x00, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0,
+0x00, 0x7F, 0x80, 0x00, 0xFF, 0x88, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x7F, 0xE0, 0x01, 0xFF, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1F,
+0xF0, 0x01, 0xFF, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x7F, 0xE0, 0x00, 0x00, 0x00, 0x06, 0x7F, 0xF0,
+0x03, 0x3F, 0xF8, 0x00, 0x00, 0x00, 0x01, 0xFF, 0xF8, 0x00, 0x00, 0x00, 0x0B, 0xFF, 0x98, 0x02,
+0x3F, 0xFC, 0x00, 0x00, 0x00, 0x07, 0xFF, 0xFE, 0x00, 0x00, 0x00, 0x01, 0xFF, 0x88, 0x02, 0x3F,
+0xFE, 0x00, 0x00, 0x00, 0x0F, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x03, 0xFD, 0x88, 0x00, 0x37, 0xFF,
+0x10, 0x00, 0x00, 0x1F, 0xFF, 0xFF, 0x80, 0x00, 0x00, 0x07, 0xFD, 0x80, 0x00, 0x23, 0xFF, 0x80,
+0x00, 0x00, 0x3F, 0xFF, 0xFF, 0xC0, 0x00, 0x00, 0x9F, 0xF8, 0x80, 0x00, 0x23, 0xFF, 0xC8, 0x00,
+0x00, 0x7F, 0xFF, 0xFF, 0xE0, 0x00, 0x00, 0x3F, 0xF8, 0x80, 0x00, 0x21, 0xFF, 0xE0, 0x00, 0x00,
+0x7F, 0xFF, 0xFF, 0xF0, 0x00, 0x00, 0x3F, 0xF0, 0x80, 0x00, 0x01, 0xFF, 0xE4, 0x00, 0x00, 0xFF,
+0xFF, 0xFF, 0xF0, 0x00, 0x00, 0x7F, 0xF0, 0x80, 0x00, 0x01, 0xFF, 0xF0, 0x00, 0x00, 0xFF, 0xFF,
+0xFF, 0xF8, 0x00, 0x00, 0xFF, 0xF0, 0x00, 0x00, 0x01, 0xFF, 0xF8, 0x00, 0x01, 0xFF, 0xFF, 0xFF,
+0xF8, 0x00, 0x00, 0xFF, 0xF0, 0x00, 0x00, 0x01, 0xFF, 0xF8, 0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xF8,
+0x00, 0x01, 0xFF, 0xF0, 0x00, 0x00, 0x03, 0xFD, 0x7C, 0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFC, 0x00,
+0x01, 0xFB, 0xF0, 0x00, 0x00, 0x03, 0xEF, 0xFC, 0x00, 0x03, 0xFF, 0xFF, 0xFF, 0xFC, 0x00, 0x03,
+0xFA, 0xF8, 0x00, 0x00, 0x03, 0xA4, 0xFC, 0x00, 0x03, 0xFF, 0xFF, 0xFF, 0xFC, 0x00, 0x03, 0xD2,
+0xF8, 0x00, 0x00, 0x03, 0xA4, 0x9E, 0x00, 0x03, 0xFF, 0xFF, 0xFF, 0xFC, 0x00, 0x07, 0xD6, 0xB8,
+0x00, 0x00, 0x03, 0xA4, 0x97, 0x00, 0x03, 0xFF, 0xFF, 0xFF, 0xFC, 0x00, 0x06, 0xD4, 0xB8, 0x00,
+0x00, 0x03, 0xA4, 0x97, 0x00, 0x03, 0xFF, 0xFF, 0xFF, 0xFC, 0x00, 0x0E, 0x84, 0xB8, 0x00, 0x00,
+0x03, 0x24, 0x97, 0x00, 0x03, 0xFF, 0xFF, 0xFF, 0xFC, 0x00, 0x0E, 0x24, 0x98, 0x00, 0x00, 0x03,
+0x24, 0x95, 0x80, 0x03, 0xFF, 0xFF, 0xFF, 0xFC, 0x00, 0x0D, 0x24, 0x98, 0x00, 0x00, 0x07, 0x24,
+0x01, 0x80, 0x03, 0xFF, 0xFF, 0xFF, 0xFC, 0x00, 0x1D, 0x24, 0x9C, 0x00, 0x00, 0x07, 0x20, 0x41,
+0x80, 0x03, 0xFF, 0xFF, 0xFF, 0xFC, 0x00, 0x15, 0x24, 0x9C, 0x00, 0x00, 0x07, 0x20, 0x40, 0x80,
+0x01, 0xFF, 0xFF, 0xFF, 0xF8, 0x00, 0x15, 0x24, 0x9C, 0x00, 0x00, 0x06, 0x20, 0x40, 0xC0, 0x01,
+0xFF, 0xFF, 0xFF, 0xF8, 0x00, 0x31, 0x24, 0x8C, 0x00, 0x00, 0x06, 0x20, 0x4A, 0x40, 0x01, 0xFF,
+0xFF, 0xFF, 0xF8, 0x00, 0x25, 0x24, 0x8C, 0x00, 0x00, 0x02, 0x22, 0x4B, 0xC0, 0x01, 0xFF, 0xFF,
+0xFF, 0xF8, 0x00, 0x3D, 0x44, 0x8C, 0x00, 0x00, 0x0A, 0x22, 0x7F, 0xC0, 0x00, 0xFF, 0xFF, 0xFF,
+0xF0, 0x00, 0x3F, 0x6C, 0x8A, 0x00, 0x00, 0x0B, 0x37, 0x7F, 0x60, 0x00, 0xFF, 0xFF, 0xFF, 0xF0,
+0x00, 0x7F, 0xEC, 0x9A, 0x00, 0x00, 0x07, 0x7F, 0xE9, 0x60, 0x00, 0xFF, 0xFF, 0xFF, 0xF0, 0x00,
+0x69, 0xFF, 0xDC, 0x00, 0x00, 0x07, 0xFF, 0xE5, 0x60, 0x00, 0x7F, 0xFF, 0xFF, 0xE0, 0x00, 0x68,
+0x7F, 0xFC, 0x00, 0x00, 0x07, 0xFD, 0x25, 0x70, 0x00, 0x7F, 0xFF, 0xFF, 0xE0, 0x00, 0xE8, 0x7F,
+0x7C, 0x00, 0x00, 0x07, 0x55, 0x21, 0x3F, 0x80, 0x7F, 0xFF, 0xFF, 0xE0, 0x1F, 0xC8, 0x4D, 0x5C,
+0x00, 0x00, 0x07, 0x55, 0x02, 0x3F, 0xE0, 0x3F, 0xFF, 0xFF, 0xC0, 0x7F, 0xC0, 0x4D, 0x5C, 0x00,
+0x00, 0x0F, 0x54, 0x4A, 0xFF, 0xF8, 0x3F, 0xFF, 0xFF, 0xC1, 0xFF, 0xF2, 0x48, 0x5E, 0x00, 0x00,
+0x0D, 0x46, 0x4D, 0xFF, 0xFE, 0x1F, 0xFF, 0xFF, 0x87, 0xFF, 0xFA, 0x0A, 0x56, 0x00, 0x00, 0x0D,
+0x42, 0x41, 0xFF, 0xFF, 0x1F, 0xFF, 0xFF, 0x8F, 0xFF, 0xF9, 0x22, 0x56, 0x00, 0x00, 0x09, 0x4A,
+0x03, 0xFF, 0xFF, 0xCF, 0xFF, 0xFF, 0x3F, 0xFF, 0xFC, 0x26, 0x8A, 0x00, 0x00, 0x1A, 0x28, 0x87,
+0xFF, 0xFF, 0xEF, 0xFF, 0xFF, 0x7F, 0xFF, 0xFE, 0x04, 0x0A, 0x00, 0x00, 0x1A, 0x24, 0x87, 0xFF,
+0xFF, 0xF7, 0xFF, 0xFE, 0xFF, 0xFF, 0xFE, 0x14, 0x0B, 0x00, 0x00, 0x12, 0x24, 0x8F, 0xFF, 0xFF,
+0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x10, 0x09, 0x00, 0x00, 0x12, 0x05, 0xAF, 0xFF, 0xFF, 0xFF,
+0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x52, 0x09, 0x00, 0x00, 0x12, 0x09, 0x8F, 0xFF, 0xFF, 0xFF, 0xFF,
+0xFF, 0xFF, 0xFF, 0xFF, 0x2A, 0x49, 0x00, 0x00, 0x32, 0x48, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+0xFF, 0xFF, 0xFF, 0xA8, 0x48, 0x80, 0x00, 0x22, 0x4A, 0x1F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+0xFF, 0xFF, 0x81, 0x08, 0x80, 0x00, 0x22, 0x5A, 0x1F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+0xFF, 0x85, 0x08, 0x80, 0x00, 0x22, 0x14, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+0xC2, 0x24, 0x80, 0x00, 0x24, 0x8C, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC2,
+0xA4, 0xC0, 0x00, 0x64, 0xA8, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC0, 0xA4,
+0xC0, 0x00, 0xC4, 0xA0, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC0, 0x44, 0x40,
+0x00, 0x44, 0x00, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC0, 0x54, 0x40, 0x00,
+0xC5, 0x40, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC0, 0x34, 0x40, 0x00, 0xC5,
+0x40, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC0, 0x34, 0x60, 0x00, 0xC5, 0x80,
+0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC0, 0x04, 0x60, 0x00, 0xC4, 0x00, 0x3F,
+0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC0, 0x0E, 0x60, 0x00, 0xCE, 0x00, 0x3F, 0xFF,
+0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC0, 0x0E, 0x60, 0x00, 0xCA, 0x00, 0x3F, 0xFF, 0xFF,
+0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC0, 0x06, 0x60, 0x00, 0xCC, 0x00, 0x3F, 0xFF, 0xFF, 0xFF,
+0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC0, 0x06, 0x60, 0x00, 0xCC, 0x00, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF,
+0xFF, 0xFF, 0xFF, 0xFF, 0xC0, 0x02, 0xE0, 0x00, 0xCC, 0x00, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+0xFF, 0xFF, 0xFF, 0xC0, 0x02, 0xC0, 0x00, 0xC8, 0x00, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+0xFF, 0xFF, 0xC0, 0x01, 0xC0, 0x00, 0xE0, 0x00, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+0xFF, 0xC0, 0x01, 0xC0, 0x00, 0xF0, 0x00, 0x1F, 0xFF, 0xFF, 0xFF, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF,
+0x80, 0x00, 0x40, 0x00, 0x50, 0x00, 0x1F, 0xFF, 0xFF, 0xFF, 0x9F, 0xDF, 0xFF, 0xFF, 0xFF, 0x80,
+0x00, 0x40, 0x00, 0x40, 0x00, 0x1F, 0xFF, 0xFF, 0xFF, 0x1F, 0xCF, 0xFF, 0xFF, 0xFF, 0x80, 0x00,
+0xC0, 0x00, 0x40, 0x00, 0x1F, 0xFF, 0xFF, 0xFE, 0x3F, 0xC7, 0xFF, 0xFF, 0xFF, 0x80, 0x00, 0x80,
+0x00, 0x40, 0x00, 0x0F, 0xFF, 0xFF, 0xFC, 0x3F, 0xC3, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x80, 0x00,
+0x60, 0x00, 0x0F, 0xFF, 0xFF, 0xF8, 0x3F, 0xC1, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x80, 0x00, 0x20,
+0x00, 0x07, 0xFF, 0xFF, 0xF0, 0x3F, 0xE0, 0xFF, 0xFF, 0xFE, 0x00, 0x00, 0x80, 0x00, 0x20, 0x00,
+0x07, 0xFF, 0xFF, 0xE0, 0x3F, 0xE0, 0x7F, 0xFF, 0xFE, 0x00, 0x01, 0x00, 0x00, 0x20, 0x00, 0x03,
+0xFF, 0xFF, 0xC0, 0x7F, 0xE0, 0x3F, 0xFF, 0xFC, 0x00, 0x01, 0x00, 0x00, 0x30, 0x00, 0x03, 0xFF,
+0xFF, 0x80, 0x7F, 0xE0, 0x1F, 0xFF, 0xFC, 0x00, 0x02, 0x00, 0x00, 0x10, 0x00, 0x01, 0xFF, 0xFE,
+0x00, 0x7F, 0xE0, 0x07, 0xFF, 0xF8, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0xFF, 0xFC, 0x00,
+0x7F, 0xF0, 0x03, 0xFF, 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7F, 0xF0, 0x00, 0xFF,
+0xF0, 0x00, 0xFF, 0xE0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1F, 0x80, 0x00, 0xFF, 0xF0,
+0x00, 0x1F, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xF8, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xF8, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xFF, 0xF8, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xFF, 0xFC, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xFF, 0xFC, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0xFF, 0xFC, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0xFF, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x07, 0xFF, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x07, 0xFF, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x07, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x0F, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+0x00, 0x0F, 0xFF, 0xFF, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0xFF, 0xDF, 0xFF, 0xFF, 0xC0,
+0x1F, 0xFF, 0xFF, 0x80, 0x1F, 0xF8, 0x00, 0x1F, 0xF8, 0x07, 0xFF, 0xDF, 0xFF, 0xFF, 0xC0, 0x3F,
+0xFF, 0xFF, 0xC0, 0x3F, 0xFF, 0xFF, 0xDF, 0xFE, 0x0F, 0xFF, 0xE0, 0x00, 0x00, 0x00, 0x3F, 0xFF,
+0xFF, 0xE0, 0x00, 0x00, 0x00, 0x3F, 0xFF, 0x07, 0xFF, 0xFF, 0xFF, 0xFF, 0xC0, 0x7F, 0xFF, 0xFF,
+0xE0, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0x0F, 0xFF, 0xFF, 0xFF, 0xFF, 0x80, 0x7F, 0xFF, 0xFF, 0xF0,
+0x1F, 0xFF, 0xFF, 0xFF, 0xFF, 0x0C, 0x1F, 0xFF, 0xFF, 0xFF, 0x80, 0xFF, 0xFF, 0xFF, 0xF8, 0x1F,
+0xFF, 0xFF, 0xFF, 0xFF, 0x39, 0xDF, 0xFF, 0x00, 0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xF8, 0x00, 0x00,
+0x0F, 0xFF, 0xB9, 0x01, 0xCF, 0x46, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06,
+0x3F, 0xB8, 0x01, 0xFB, 0x26, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x2C,
+0x38, 0x01, 0xFB, 0x06, 0x00, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1E, 0x00, 0x02, 0x4D, 0xF8,
+0x01, 0xFB, 0xFE, 0x00, 0x0F, 0x00, 0x00, 0x0F, 0x80, 0x00, 0x1F, 0x00, 0x07, 0xFD, 0xF8, 0x01,
+0xFB, 0x00, 0x00, 0x1F, 0x80, 0x00, 0x0F, 0x80, 0x00, 0x1F, 0x00, 0x00, 0x0D, 0xF8, 0x03, 0xFA,
+0x00, 0x00, 0x0E, 0x80, 0x00, 0x0F, 0x80, 0x00, 0x15, 0x00, 0x00, 0x05, 0xFC, 0x03, 0xFA, 0x00,
+0x00, 0x0D, 0x00, 0x00, 0x0A, 0x80, 0x00, 0x1A, 0x00, 0x00, 0x07, 0xFC, 0x03, 0xFA, 0x00, 0x00,
+0x07, 0x00, 0x00, 0x07, 0x00, 0x00, 0x0E, 0x00, 0x00, 0x06, 0xFC, 0x07, 0xF6, 0x00, 0x00, 0x27,
+0x40, 0x00, 0x05, 0x00, 0x00, 0x2E, 0xC0, 0x00, 0x06, 0xFE, 0x07, 0xF6, 0x00, 0x00, 0x13, 0xC0,
+0x00, 0x1B, 0x60, 0x00, 0x33, 0x00, 0x00, 0x02, 0xFE, 0x07, 0xF4, 0x00, 0x00, 0x06, 0x00, 0x00,
+0x07, 0x00, 0x00, 0x0E, 0x00, 0x00, 0x02, 0xFE, 0x03, 0xF4, 0x00, 0x00, 0x19, 0x00, 0x00, 0x05,
+0x80, 0x00, 0x33, 0x00, 0x00, 0x02, 0xFE, 0x07, 0xFE, 0x00, 0x00, 0x30, 0xC0, 0x00, 0x18, 0x60,
+0x00, 0x20, 0xC0, 0x00, 0x03, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x07, 0xFC, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 
+};
+
+
+const unsigned char PROGMEM logoz [] = {
+
+ 
+0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x38, 0x0E, 0x03, 0xC0, 0x00, 0x00, 0x7C, 0x0E, 0x07,
+0xE0, 0x00, 0x00, 0x3E, 0x0F, 0x0F, 0xE0, 0x00, 0x00, 0x0E, 0x07, 0x1F, 0x00, 0x00, 0x00, 0x06,
+0x03, 0x0E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x1F, 0xFC,
+0x00, 0x00, 0xE0, 0x00, 0x7F, 0xFE, 0x18, 0x01, 0xE0, 0x01, 0xFF, 0xFE, 0x3C, 0x03, 0xE0, 0x07,
+0xF8, 0x0E, 0x1C, 0x07, 0xC0, 0x0F, 0xE0, 0x06, 0x1C, 0x0F, 0x80, 0x0F, 0x00, 0x00, 0x1C, 0x0F,
+0x00, 0x1E, 0x00, 0x00, 0x1E, 0x1E, 0x00, 0x1C, 0x00, 0x00, 0x0E, 0x3C, 0x00, 0x3C, 0x00, 0x00,
+0x0E, 0x3C, 0x00, 0x38, 0x00, 0x00, 0x0E, 0x78, 0x00, 0x38, 0x00, 0x00, 0x0E, 0x78, 0x00, 0x38,
+0x00, 0x00, 0x0E, 0x70, 0x00, 0x38, 0x00, 0x00, 0x0E, 0xF0, 0x00, 0x38, 0x00, 0x00, 0x0F, 0xE0,
+0x00, 0x38, 0x00, 0x00, 0x0F, 0xE0, 0x00, 0x38, 0x00, 0x00, 0x0F, 0xC0, 0x00, 0x38, 0x00, 0x00,
+0x07, 0xC0, 0x00, 0x38, 0x00, 0x00, 0x07, 0xF0, 0x00, 0x38, 0x00, 0x00, 0x07, 0xFC, 0x00, 0x3C,
+0x00, 0x00, 0x07, 0x7E, 0x00, 0x1C, 0x00, 0x00, 0x07, 0x1F, 0x00, 0x1C, 0x00, 0x00, 0x07, 0x07,
+0x80, 0x1C, 0x00, 0x00, 0x07, 0x03, 0xC0, 0x1C, 0x07, 0xF0, 0x07, 0x01, 0xC0, 0x1C, 0x0F, 0xF8,
+0x07, 0x01, 0xE0, 0x1E, 0x07, 0xF8, 0x07, 0x00, 0xF0, 0x0F, 0x00, 0xF0, 0x07, 0x00, 0x70, 0x07,
+0x81, 0xF0, 0x07, 0x00, 0x70, 0x07, 0xC1, 0xF0, 0x0F, 0x00, 0x78, 0x03, 0xE1, 0xC0, 0x0E, 0x00,
+0x38, 0x01, 0xE1, 0xC0, 0x0E, 0x00, 0x38, 0x00, 0xF3, 0xC0, 0x1E, 0x00, 0x3C, 0x00, 0x73, 0xC0,
+0x1E, 0x00, 0x1C, 0x00, 0x7B, 0x80, 0x1C, 0x00, 0x0C, 0x00, 0x3F, 0x80, 0x0C, 0x00, 0x00, 0x00,
+0x3F, 0x80, 0x00, 0x00, 0x00, 0x00, 0x1F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0E, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x78, 0x30, 0x30,
+0x2C, 0x20, 0x30, 0x78, 0x30, 0x30, 0x2C, 0x20,
+
+
+};
+
+
+static const unsigned char PROGMEM logo16_glcd_bmp[] =
+{
+B00000000, B11000000,
+  B00000001, B11000000,
+  B00000001, B11000000,
+  B00000011, B11100000,
+  B11110011, B11100000,
+  B11111110, B11111000,
+  B01111110, B11111111,
+  B00110011, B10011111,
+  B00011111, B11111100,
+  B00001101, B01110000,
+  B00011011, B10100000,
+  B00111111, B11100000,
+  B00111111, B11110000,
+  B01111100, B11110000,
+  B01110000, B01110000,
+  B00000000, B00110000
+ 
+  };
+ 
+
+
+//end lcd
+
+
+
+
+ 
+void setup() {
+
+
+ Serial.begin(115200);
+  //////////////////menu
+
+  pinMode(D12,INPUT_PULLUP);
+ 
+
+  pinMode(D13, INPUT_PULLUP);
+  pinMode(D14, INPUT_PULLUP);
+
+
+
+  ///////////////////////////////end menu///////////////////////////////////////////////
+
+  /////////////joy
+
+    pinMode(vbatPin, INPUT);
+   
+    pinMode(vbatPinY, INPUT);
+
+ 
+///   EEPROM.begin(3512);
+
+   //endep
+ 
+
+ 
+
+  //lcd
+ display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3C (for the 128x32)
+   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
+    Serial1.println(F("SSD1306 allocation failed"));
+    for(;;); // Don't proceed, loop forever
+  }
+ //// Serial.begin(9600);   USBSERIAL COM MAPPLE
+  display.display();
+  delay(2000); // Pause for 2 seconds
+
+
+
+  //logo
+display.clearDisplay();
+
+  display.display();
+  delay(1000);
+
+
+
+
+  //logo2
+display.clearDisplay();
+ display.drawBitmap(48, 8,  logoz, 48, 48, WHITE);
+  display.display();
+  delay(1000);
+
+  // invert the display
+  display.invertDisplay(true);
+  delay(1000);
+  display.invertDisplay(false);
+  delay(1000);
+  display.clearDisplay();
+
+  // draw a bitmap icon and 'animate' movement
+ testdrawbitmap(logo16_glcd_bmp, LOGO16_GLCD_HEIGHT, LOGO16_GLCD_WIDTH);
+
+  //end logo
+
+   display.display();
+  delay(1000);
+
+    // Clear the buffer.
+  display.clearDisplay();
+
+display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.println("KING-GRAB!!!AUE)");
+   display.println("Gansta-Paradise.com");
+  display.setTextColor(BLACK, WHITE); // 'inverted' text
+  display.println(333);
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+   display.println("KING-GRAB");
+  display.display();
+  delay(1000);
+  display.clearDisplay();
+
+ 
+  //end lcd
+pinMode(rxPin, INPUT);
+//pinMode(buttonvibros,INPUT_PULLUP);
+
+
+  pinMode(TX, OUTPUT);
+
+  lastRxValue = digitalRead(rxPin);
+lastRxTime = micros();
+
+//kee
+  keelastRxValue = digitalRead(rxPin);
+keelastRxTime = micros();
+///  delay(100);
+/// Serial.println("start KING-GRAB ");
+ 
+ 
+ ///delay(100);
+/// bumer();
+
+
+ 
+
+//////////WIIIIIIIIIFIIIIIIIIIIIIII////////////////////////////////////////////////////
+
+
+//WiFi.mode(WIFI_STA);
+//WiFi.begin(ssid, password);
+// while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+//   delay(5000);
+// ESP.restart();
+// }
+//ArduinoOTA.setHostname("ESP32"); // Задаем имя сетевого порта
+ 
+// ArduinoOTA.begin(); // Инициализируем OTA
+
+ 
+WiFi.mode(WIFI_STA);
+WiFi.begin(ssid, password);
+while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+delay(5000);
+ESP.restart();
+ 
+}
+ArduinoOTA.setHostname("KING-GRABBER-ESP32"); // Задаем имя сетевого порта
+
+ArduinoOTA.begin(); // Инициализируем OTA
+
+
+
+
+////perenesen
+
+
+
+///parol();////////////paral raskoment dla izda
+
+   
+}
+ 
+
+void loop() {
+
+ArduinoOTA.handle(); //////////ota prob
+
+grabmenu();
+
+ VBAT = (120.0/20.0) * (float)(analogRead(vbatPin)) / 1024.0; // LiPo battery voltage in volts
+ 
+  Serial.println("OX = "); Serial.print(VBAT); Serial.println(" X");
+
+  VBATY = (120.0/20.0) * (float)(analogRead(vbatPinY)) / 1024.0; // LiPo battery voltage in volts
+ 
+  Serial.println("OY = "); Serial.print(VBATY); Serial.println(" Y");
+
+
+     
+}
+
+//////////////////////////////////end loop//////////////////////////
+
+void glushilka(){
+
+digitalWrite(TX,HIGH);
+delay(50);
+digitalWrite (TX, LOW) ;
+delay(50);
+digitalWrite(TX,HIGH);
+delay(50);
+digitalWrite (TX, LOW) ;
+delay(50);
+digitalWrite(TX,HIGH);
+delay(50);
+digitalWrite (TX, LOW) ;
+delay(50);
+digitalWrite(TX,HIGH);
+delay(50);
+digitalWrite (TX, LOW) ;
+delay(50);
+digitalWrite(TX,HIGH);
+delay(50);
+digitalWrite (TX, LOW) ;
+delay(50);
+digitalWrite(TX,HIGH);
+delay(50);
+digitalWrite (TX, LOW) ;
+delay(50);
+digitalWrite(TX,HIGH);
+delay(50);
+digitalWrite (TX, LOW) ;
+delay(50);
+digitalWrite(TX,HIGH);
+delay(50);
+digitalWrite (TX, LOW) ;
+delay(50);
+digitalWrite(TX,HIGH);
+delay(50);
+digitalWrite (TX, LOW) ;
+delay(50);
+ 
+}
+
+
+void glushilka2(){
+
+digitalWrite(TX,HIGH);
+delay(10);
+digitalWrite (TX, LOW) ;
+delay(10);
+digitalWrite(TX,HIGH);
+delay(10);
+digitalWrite (TX, LOW) ;
+delay(10);
+digitalWrite(TX,HIGH);
+delay(10);
+digitalWrite (TX, LOW) ;
+delay(10);
+digitalWrite(TX,HIGH);
+delay(10);
+digitalWrite (TX, LOW) ;
+delay(10);
+digitalWrite(TX,HIGH);
+delay(10);
+digitalWrite (TX, LOW) ;
+delay(10);
+digitalWrite(TX,HIGH);
+delay(10);
+digitalWrite (TX, LOW) ;
+delay(10);
+digitalWrite(TX,HIGH);
+delay(10);
+digitalWrite (TX, LOW) ;
+delay(10);
+digitalWrite(TX,HIGH);
+delay(10);
+digitalWrite (TX, LOW) ;
+delay(10);
+digitalWrite(TX,HIGH);
+delay(10);
+digitalWrite (TX, LOW) ;
+delay(10);
+ 
+}
+
+
+void glushilka3(){
+
+digitalWrite(TX,HIGH);
+delay(1);
+digitalWrite (TX, LOW) ;
+delay(1);
+digitalWrite(TX,HIGH);
+delay(1);
+digitalWrite (TX, LOW) ;
+delay(1);
+digitalWrite(TX,HIGH);
+delay(1);
+digitalWrite (TX, LOW) ;
+delay(1);
+digitalWrite(TX,HIGH);
+delay(1);
+digitalWrite (TX, LOW) ;
+delay(1);
+digitalWrite(TX,HIGH);
+delay(1);
+digitalWrite (TX, LOW) ;
+delay(1);
+digitalWrite(TX,HIGH);
+delay(1);
+digitalWrite (TX, LOW) ;
+delay(1);
+digitalWrite(TX,HIGH);
+delay(1);
+digitalWrite (TX, LOW) ;
+delay(1);
+digitalWrite(TX,HIGH);
+delay(1);
+digitalWrite (TX, LOW) ;
+delay(1);
+digitalWrite(TX,HIGH);
+delay(1);
+digitalWrite (TX, LOW) ;
+delay(1);
+ 
+}
+
+
+
+
+
+void send_meander(int time)//pra meandr
+
+{
+  digitalWrite(TX, HIGH);
+  delayMicroseconds(time);
+  digitalWrite(TX, LOW);
+  delayMicroseconds(time);
+}
+
+void SendStarlinePreambula()
+{
+  for (byte i=0; i<=10; i++)
+    send_meander(1000);
+}
+
+void SendStarlineBit(byte b)
+{
+  if (b)
+    send_meander(250); // 1
+  else 
+    send_meander(500); // 0
+}
+
+void SendStarline(unsigned char *TCODE, unsigned int S)
+{
+  for (int j=0;j<10;j++)                                  // посылку посылаем как и брелок - 10 раз подряд.
+  {
+    SendStarlinePreambula();                              // посылаем преамбулу
+    for (byte i=0;i<S;i++)                                // перебор масива (8 x 8 = 64 bits)
+    {
+    for (int x=0;x<8;x++){
+    SendStarlineBit(!bitRead(TCODE[i], x));               // побитово перебираем, инвертируе и посылаем код
+    }
+    }
+  }
+  digitalWrite(TX, HIGH);
+}
+
+//  Keeloq ----------------------------------------------
+void SendKeeloqPreambula()
+{
+  for (byte i=0; i<23; i++)
+    send_meander(400);
+}
+
+void SendKeeloq(unsigned char *TCODE)
+{
+  signed char a;
+  SendKeeloqPreambula();
+  digitalWrite(TX, LOW);
+  delayMicroseconds(10*400);
+
+  for(a=0; a<66; a++)
+  {
+    digitalWrite(TX, HIGH);
+    delayMicroseconds(400);
+    if(TCODE[a/8]&(1<<(a%8))) digitalWrite(TX, LOW);
+    delayMicroseconds(400);
+    digitalWrite(TX, LOW);
+    delayMicroseconds(400);
+  }
+  delay(16);
+}
+//---------------------------------------------------------
+
+void Jammer(){
+for (int i=200; i>0; i--){
+  digitalWrite(TX, LOW);
+  delay(20);
+  digitalWrite(TX, HIGH);
+  delay(20);
+}}
+
+
+
+
+
+void SendStarline2(long StarLineCode2, long StarLineCode1 )
+{for (int j=0;j<10;j++) // посылку посылаем как и брелок - 10 раз подряд.
+  {for (byte i=0; i<6; i++)
+    {
+    digitalWrite(TX, HIGH); // посылаем высокий
+    delay(1); // ждём указанное время
+    digitalWrite(TX, LOW); // посылаем низкий
+    delay(1);
+    }}
+    delay(1); // сделать паузу после посылки на 1 мс, просто так...
+  }
+
+
+
+
+////osnovb schit
+void grab(unsigned long time, int value)
+{
+
+bValidPacket = false;
+if(starlinePreambula==0){
+if(time > 900 && time < 1100 && value == 1){//ждем преамбулу
+starlineCounter ++;
+}
+else if(value != 1){
+}
+else{
+if(starlineCounter==6){
+starlinePreambula=1;
+//Serial.println("preambula");
+}
+starlineCounter = 0;
+}
+}
+if(starlinePreambula==1){
+
+if(time > 350 && time < 650 && value == 1){//ждем данные
+StarLineCode1=(StarLineCode1<<1)|1;
+invertStarLineCode1=(invertStarLineCode1<<1)|0;
+code += "1";
+bValidPacket = true;
+//Serial.println("~500");
+}
+else if(time > 150 && time < 350 && value == 1){
+StarLineCode1=(StarLineCode1<<1)|0;
+invertStarLineCode1=(invertStarLineCode1<<1)|1;
+code += "0";
+bValidPacket = true;
+//Serial.println("~250");
+}
+else{
+//Serial.println(time);
+}
+
+if(bValidPacket){
+starlineCounter++;
+if(starlineCounter==32){
+StarLineCode2=StarLineCode1;
+invertStarLineCode2=invertStarLineCode1;
+//starlineCounter = 0;
+//starlinePreambula = 0;
+}
+if(starlineCounter==64){
+Serial.println(" - starline origin - ");
+Serial.print(StarLineCode2, HEX);
+Serial.print(" - ");
+Serial.println(StarLineCode1, HEX);
+Serial.print(StarLineCode2, BIN);
+Serial.print(" - ");
+Serial.println(StarLineCode1, BIN);
+
+
+Serial.println(" - starline invert - ");
+Serial.print(invertStarLineCode2, HEX);
+Serial.print(" - ");
+Serial.println(invertStarLineCode1, HEX);
+Serial.print(invertStarLineCode2, BIN);
+Serial.print(" - ");
+Serial.println(invertStarLineCode1, BIN);
+/*Serial.print(StarLineCode2,HEX);
+Serial.print(" -- ");
+Serial.println(StarLineCode1,HEX);*/
+
+//lcd
+// display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3C (for the 128x32)
+
+//display.display();
+ 
+
+display.clearDisplay();
+
+delay(100);
+  display.setTextColor(WHITE);
+ display.setCursor(0,0);
+  display.setTextSize(1);
+  display.println("invertStarLineCode");
+
+  display.setTextSize(1.5);
+  display.println(invertStarLineCode1, HEX);
+    display.println(invertStarLineCode2, HEX);
+   
+delay(100);
+    display.display();
+
+starlineCounter = 0;
+starlinePreambula = 0;
+
+}
+}
+}
+
+/*Serial.println(time);
+Serial.println("-");
+Serial.println(value);
+Serial.println("----");*/
+}
+
+
+
+
+
+
+
+
+
+//muzonchik
+
+void bumer() {
+
+ 
+   
+}
+
+
+void testdrawbitmap(const uint8_t *bitmap, uint8_t w, uint8_t h) {
+  uint8_t icons[NUMFLAKES][3];
+ 
+  // initialize
+  for (uint8_t f=0; f< NUMFLAKES; f++) {
+    icons[f][XPOS] = random(display.width());
+    icons[f][YPOS] = 0;
+    icons[f][DELTAY] = random(5) + 1;
+   
+    Serial.print("x: ");
+    Serial.print(icons[f][XPOS], DEC);
+    Serial.print(" y: ");
+    Serial.print(icons[f][YPOS], DEC);
+    Serial.print(" dy: ");
+    Serial.println(icons[f][DELTAY], DEC);
+  }
+
+  while (ing<30) {
+
+   ing++;
+   
+    // draw each icon
+    for (uint8_t f=0; f< NUMFLAKES; f++) {
+      display.drawBitmap(icons[f][XPOS], icons[f][YPOS], bitmap, w, h, WHITE);
+    }
+    display.display();
+    delay(200);
+   
+    // then erase it + move it
+    for (uint8_t f=0; f< NUMFLAKES; f++) {
+      display.drawBitmap(icons[f][XPOS], icons[f][YPOS], bitmap, w, h, BLACK);
+      // move it
+      icons[f][YPOS] += icons[f][DELTAY];
+      // if its gone, reinit
+      if (icons[f][YPOS] > display.height()) {
+        icons[f][XPOS] = random(display.width());
+        icons[f][YPOS] = 0;
+        icons[f][DELTAY] = random(5) + 1;
+      }
+    }
+   }
+}
+
+
+void testdrawchar(void) {
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+
+  for (uint8_t i=0; i < 168; i++) {
+    if (i == '\n') continue;
+    display.write(i);
+    if ((i > 0) && (i % 21 == 0))
+      display.println();
+  }   
+  display.display();
+  delay(1);
+}
+
+void testdrawcircle(void) {
+  for (int16_t i=0; i<display.height(); i+=2) {
+    display.drawCircle(display.width()/2, display.height()/2, i, WHITE);
+    display.display();
+    delay(1);
+  }
+}
+
+void testfillrect(void) {
+  uint8_t color = 1;
+  for (int16_t i=0; i<display.height()/2; i+=3) {
+    // alternate colors
+    display.fillRect(i, i, display.width()-i*2, display.height()-i*2, color%2);
+    display.display();
+    delay(1);
+    color++;
+  }
+}
+
+
+
+
+
+void testdrawroundrect(void) {
+  for (int16_t i=0; i<display.height()/2-2; i+=2) {
+    display.drawRoundRect(i, i, display.width()-2*i, display.height()-2*i, display.height()/4, WHITE);
+    display.display();
+    delay(1);
+  }
+}
+
+void testfillroundrect(void) {
+  uint8_t color = WHITE;
+  for (int16_t i=0; i<display.height()/2-2; i+=2) {
+    display.fillRoundRect(i, i, display.width()-2*i, display.height()-2*i, display.height()/4, color);
+    if (color == WHITE) color = BLACK;
+    else color = WHITE;
+    display.display();
+    delay(1);
+  }
+}
+   
+void testdrawrect(void) {
+  for (int16_t i=0; i<display.height()/2; i+=2) {
+    display.drawRect(i, i, display.width()-2*i, display.height()-2*i, WHITE);
+    display.display();
+    delay(1);
+  }
+}
+
+void testdrawline() { 
+  for (int16_t i=0; i<display.width(); i+=4) {
+    display.drawLine(0, 0, i, display.height()-1, WHITE);
+    display.display();
+    delay(1);
+  }
+  for (int16_t i=0; i<display.height(); i+=4) {
+    display.drawLine(0, 0, display.width()-1, i, WHITE);
+    display.display();
+    delay(1);
+  }
+  delay(250);
+ 
+  display.clearDisplay();
+  for (int16_t i=0; i<display.width(); i+=4) {
+    display.drawLine(0, display.height()-1, i, 0, WHITE);
+    display.display();
+    delay(1);
+  }
+  for (int16_t i=display.height()-1; i>=0; i-=4) {
+    display.drawLine(0, display.height()-1, display.width()-1, i, WHITE);
+    display.display();
+    delay(1);
+  }
+  delay(250);
+ 
+  display.clearDisplay();
+  for (int16_t i=display.width()-1; i>=0; i-=4) {
+    display.drawLine(display.width()-1, display.height()-1, i, 0, WHITE);
+    display.display();
+    delay(1);
+  }
+  for (int16_t i=display.height()-1; i>=0; i-=4) {
+    display.drawLine(display.width()-1, display.height()-1, 0, i, WHITE);
+    display.display();
+    delay(1);
+  }
+  delay(250);
+
+  display.clearDisplay();
+  for (int16_t i=0; i<display.height(); i+=4) {
+    display.drawLine(display.width()-1, 0, 0, i, WHITE);
+    display.display();
+    delay(1);
+  }
+  for (int16_t i=0; i<display.width(); i+=4) {
+    display.drawLine(display.width()-1, 0, i, display.height()-1, WHITE);
+    display.display();
+    delay(1);
+  }
+  delay(250);
+}
+
+void testscrolltext(void) {
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor(10,0);
+  display.clearDisplay();
+  display.println("scroll");
+  display.display();
+  delay(1);
+ 
+  display.startscrollright(0x00, 0x0F);
+  delay(2000);
+  display.stopscroll();
+  delay(1000);
+  display.startscrollleft(0x00, 0x0F);
+  delay(2000);
+  display.stopscroll();
+  delay(1000);   
+  display.startscrolldiagright(0x00, 0x07);
+  delay(2000);
+  display.startscrolldiagleft(0x00, 0x07);
+  delay(2000);
+  display.stopscroll();
+}
+
+//keeloq////////////////////////////////////////////////KEEEEEEEEEEEEEEELOOOOQ//////////////////////////////////////////////////////////////////////////
+void keelog_vardump(){
+  if(decodeMethod == 0){
+    Serial.println(" - keelog origin - ");
+  }
+  else{
+    Serial.println(" - keelog invert - ");
+  }
+  Serial.print(keelog_code[0], HEX);
+  Serial.print(keelog_code[1], HEX);
+  Serial.print(keelog_code[2], HEX);
+  Serial.print(keelog_code[3], HEX);
+  Serial.println("-hop");
+  Serial.print(keelog_code[4], HEX);
+  Serial.print(keelog_code[5], HEX);
+  Serial.print(keelog_code[6], HEX);
+  Serial.println("-fix");
+  Serial.print(keelog_code[7], HEX);
+  Serial.println("-btn");
+  Serial.print(keelog_code[8], HEX);
+  Serial.println("-dop");
+
+
+ 
+///glushilka();////////////////////////glushilka
+  smena = 10;
+ 
+
+ display.clearDisplay();
+
+delay(10);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.setTextSize(1);
+  display.println("invertkeeloqCode");
+
+  display.setTextSize(1.5);
+  display.print(keelog_code[0], HEX);
+  display.print(keelog_code[1], HEX);
+  display.print(keelog_code[2], HEX);
+  display.print(keelog_code[3], HEX);
+    display.println("-hop");
+      display.print(keelog_code[4], HEX);
+  display.print(keelog_code[5], HEX);
+  display.print(keelog_code[6], HEX);
+    display.println("-fix");   
+  display.print(keelog_code[7], HEX); 
+    display.println("-btn");
+     display.print(keelog_code[8], HEX); 
+    display.println("-dop");
+    display.println(k);
+    delay(10);
+
+   
+      display.display();
+
+
+     
+ 
+  //eprom
+ //  EEPROM.begin(3512);
+
+
+
+ prefs.begin("kee", false);
+
+
+ if(k<2){
+ 
+ // EEPROM.begin(3512);
+//  EEPROM.write(0, keelog_code[0]);
+
+
+prefs.putUChar("kee0",  keelog_code[0]);
+prefs.putUChar("kee1",  keelog_code[1]);
+prefs.putUChar("kee2",  keelog_code[2]);
+prefs.putUChar("kee3",  keelog_code[3]);
+prefs.putUChar("kee4",  keelog_code[4]);
+prefs.putUChar("kee5",  keelog_code[5]);
+prefs.putUChar("kee6",  keelog_code[6]);
+prefs.putUChar("kee7",  keelog_code[7]);
+prefs.putUChar("kee8",  keelog_code[8]);
+//    EEPROM.write(1,keelog_code[1]);
+ //    EEPROM.write(2,keelog_code[2]);
+ //    EEPROM.write(3,keelog_code[3]);
+ //    EEPROM.write(4,keelog_code[4]);///fix
+  ///  EEPROM.write(5,keelog_code[5]);///fix
+  //  EEPROM.write(6,keelog_code[6]);//fix
+  //   EEPROM.write(7,keelog_code[7]);
+  //  EEPROM.write(8,keelog_code[8]);
+ ///     EEPROM.commit();
+  //    EEPROM.end();
+     k ++;   
+  }
+ 
+
+     
+if(k>=2){
+   prefs.begin("kee", false);
+//  EEPROM.begin(3512);
+//  EEPROM.write(9,keelog_code[4]);///fix1bit
+prefs.putUChar("kee9",  keelog_code[4]);
+//  EEPROM.write(19,keelog_code[0]);//hop 1bit
+prefs.putUChar("kee19",  keelog_code[0]);
+
+ //   EEPROM.write(41,keelog_code[5]);//fix5
+ prefs.putUChar("kee41",  keelog_code[5]);
+ //    EEPROM.write(43,keelog_code[6]);//fix6
+ prefs.putUChar("kee43",  keelog_code[6]);
+
+  //   EEPROM.write(42,keelog_code[1]);//hop 2bit
+  prefs.putUChar("kee42",  keelog_code[1]);
+ //     EEPROM.commit();
+ // EEPROM.end();
+       
+///EEPROM.begin(3512);
+  int hugaK = prefs.getUChar("kee4", 0);//sravnenie bitovfix-- 1bit(4)
+ 
+ int hugaopK = prefs.getUChar("kee9", 0);//sravnenie bitovfix 1bit (4)
+
+int tashigipidr = prefs.getUChar("kee6",0);///fix6
+    int tashigipidr2 =prefs.getUChar("kee43",0);/////fix6
+
+
+
+    int hugazioK = prefs.getUChar("kee5", 0);//fix5
+      int hugazioKk = prefs.getUChar("kee41", 0);//fix5
+
+   
+    int hugazioopKch = prefs.getUChar("kee0", 0);//1bit 1 pak
+
+     int hugaKopzzch = prefs.getUChar("kee19", 0);
+
+     int hugazioKoip = prefs.getUChar("kee6", 0);//первый бит
+     int hugazioKoiip = prefs.getUChar("kee43", 0);
+
+
+
+
+int hugazioKkz = prefs.getUChar("kee41", 0);//fix5
+      int hugazioKkkz =  prefs.getUChar("kee5", 0);//fix5
+
+      int tashigi =  prefs.getUChar("kee41", 0);//fix5
+      int tashigi2 =  prefs.getUChar("kee5", 0);//fix5
+
+ int tashigi3 =  prefs.getUChar("kee41", 0);//fix5
+      int tashigi4 =  prefs.getUChar("kee5", 0);//fix5
+
+
+if(hugaK!=hugaopK&&hugazioK!=hugazioKk&&tashigipidr!=tashigipidr2){
+
+  k = 0;
+}
+     
+
+if(hugaK==hugaopK&&hugazioK==hugazioKk&&tashigipidr==tashigipidr2&&hugazioopKch!=hugaKopzzch)///////////////hop  srav&&hugazioKoiip!=hugazioKoip &&hugaKop!=hugazioopK
+{
+ prefs.begin("kee", false);
+
+ // EEPROM.begin(3512);
+//EEPROM.write(10, keelog_code[0]);
+prefs.putUChar("kee10",  keelog_code[0]);
+//EEPROM.write(11,keelog_code[1]);
+prefs.putUChar("kee11",  keelog_code[1]);
+//EEPROM.write(12,keelog_code[2]);
+prefs.putUChar("kee12",  keelog_code[2]);
+//EEPROM.write(13,keelog_code[3]);
+prefs.putUChar("kee13",  keelog_code[3]);
+//.write(14,keelog_code[4]);
+prefs.putUChar("kee14",  keelog_code[4]);
+//EEPROM.write(15,keelog_code[5]);
+prefs.putUChar("kee15",  keelog_code[5]);
+//EEPROM.write(16,keelog_code[6]);
+prefs.putUChar("kee16",  keelog_code[6]);
+//EEPROM.write(17,keelog_code[7]);
+prefs.putUChar("kee17",  keelog_code[7]);
+//EEPROM.write(18,keelog_code[8]);
+prefs.putUChar("kee18",  keelog_code[8]);
+//  EEPROM.commit();
+ // EEPROM.end();
+  k = 0;
+
+ 
+
+
+
+            int zilk=0;
+    for(int i = 10; i<19; i++){
+
+   //   EEPROM.begin(3512);
+     
+
+     hugazk[0] =prefs.getUChar("kee10", 0);
+      hugazk[1] =prefs.getUChar("kee11", 0);
+       hugazk[2] =prefs.getUChar("kee12", 0);
+        hugazk[3] =prefs.getUChar("kee13", 0);
+         hugazk[4] =prefs.getUChar("kee14", 0);
+          hugazk[5] =prefs.getUChar("kee15", 0);
+           hugazk[6] =prefs.getUChar("kee16", 0);
+            hugazk[7] =prefs.getUChar("kee17", 0);
+             hugazk[8] =prefs.getUChar("kee18", 0);
+   
+     display.print(hugazk[zilk],HEX);
+      delay(3);
+     
+      display.display();
+     
+     zilk++;
+  }
+ 
+}
+
+
+
+
+if(hugazioKkz==hugazioKkkz&&tashigi==tashigi2&&tashigi3==tashigi4){
+
+  display.println();
+display.println("one pack sig");
+ display.display();
+//k = 0;
+ 
+}
+
+  }
+
+
+
+   prefs.begin("kee", false);
+ 
+///EEPROM.begin(3512);
+
+keelog_codePAK2[0]=prefs.getUChar("kee10", 0);
+keelog_codePAK2[1]=prefs.getUChar("kee11", 0);
+ keelog_codePAK2[2]=prefs.getUChar("kee12", 0);
+keelog_codePAK2[3]=prefs.getUChar("kee13", 0);
+ keelog_codePAK2[4]=prefs.getUChar("kee14", 0);
+ keelog_codePAK2[5]=prefs.getUChar("kee15", 0);
+ keelog_codePAK2[6]=prefs.getUChar("kee16", 0);;
+ keelog_codePAK2[7]=prefs.getUChar("kee17", 0);
+keelog_codePAK2[8]=prefs.getUChar("kee18", 0);
+//   EEPROM.commit();
+ // EEPROM.end();
+
+
+ // EEPROM.begin(3512);
+
+ keelog_codePAK1[0]=prefs.getUChar("kee0", 0);
+keelog_codePAK1[1]=prefs.getUChar("kee1", 0);
+ keelog_codePAK1[2]=prefs.getUChar("kee2", 0);
+ keelog_codePAK1[3]=prefs.getUChar("kee3", 0);
+  keelog_codePAK1[4]=prefs.getUChar("kee4", 0);
+keelog_codePAK1[5]=prefs.getUChar("kee5", 0);
+ keelog_codePAK1[6]=prefs.getUChar("kee6", 0);
+ keelog_codePAK1[7]=prefs.getUChar("kee7", 0);
+ keelog_codePAK1[8]=prefs.getUChar("kee8", 0);
+//   EEPROM.commit();
+ // EEPROM.end();
+}
+void keelog_send(byte* keelog_code){
+  Serial.println("- sending keelog -");
+  for(int i = 0; i<9; i++){
+    Serial.print(keelog_code[i], HEX);
+    Serial.print(" - ");
+  }
+  for(int i = 0; i<11; i++){//посылаем преамблу
+    send_meander(400);
+  }
+  digitalWrite(TX, HIGH);
+  delayMicroseconds(400);
+  digitalWrite(TX, LOW);
+  delayMicroseconds(4000);//посылаем хедер
+ 
+  for( int i = 0; i<9; i++){
+    if(decodeMethod==1){
+      for(int i2 = 7;i2>=0;i2--){
+        if(bitRead(keelog_code[i], i2)){
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(400);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(2*400);
+        }
+        else{
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(2*400);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(400);
+        }
+      }
+    }
+    else{
+        for(int i2 = 0;i2<8;i2++){
+          if(!bitRead(keelog_code[i], i2)){
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(400);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(2*400);
+          }
+          else{
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(2*400);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(400);
+          }
+       }
+    }
+   
+  }
+}
+
+
+
+
+
+
+
+
+//pak2
+
+
+void keelog_sendPAK2(byte* keelog_codePAK2){
+  Serial.println("- sending keelog -ss-");
+  for(int i = 0; i<9; i++){
+    Serial.print(keelog_codePAK2[i], HEX);
+    Serial.print(" -zz ");
+  }
+  for(int i = 0; i<11; i++){//посылаем преамблу
+    send_meander(400);
+  }
+  digitalWrite(TX, HIGH);
+  delayMicroseconds(400);
+  digitalWrite(TX, LOW);
+  delayMicroseconds(4000);//посылаем хедер
+ 
+  for( int i = 0; i<9; i++){
+    if(decodeMethod==1){
+      for(int i2 = 7;i2>=0;i2--){
+        if(bitRead(keelog_codePAK2[i], i2)){
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(400);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(2*400);
+        }
+        else{
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(2*400);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(400);
+        }
+      }
+    }
+    else{
+        for(int i2 = 0;i2<8;i2++){
+          if(!bitRead(keelog_codePAK2[i], i2)){
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(400);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(2*400);
+          }
+          else{
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(2*400);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(400);
+          }
+       }
+    }
+   
+  }
+}
+
+
+
+
+
+
+void keelog_get(){
+    bValidPacket = false;
+    if(keelog_state==0){//ждем преамбулу и хедер
+      if(difTime > 280 && difTime < 620 && lastRxValue != tempRxValue){
+        keelogCounter ++;
+      }
+      else{
+        if(keelogCounter==23){
+          if(difTime>2800 && difTime<6200 && lastRxValue == 0){
+            keelog_state=1;
+          }
+        }
+       keelogCounter = 0;
+      }
+    }
+    else if(keelog_state==1){// получаем биты
+      if(difTime > 560 && difTime < 1240 && lastRxValue == 1){// получили 1
+        if(decodeMethod==0){
+          keelog_code[lround(keelogCounter/8)] = (keelog_code[lround(keelogCounter/8)]>>1)|B10000000;
+        }
+        else{
+          keelog_code[lround(keelogCounter/8)] = (keelog_code[lround(keelogCounter/8)]<<1)|B00000000;
+        }
+        bValidPacket = true;
+      }
+      else if(difTime > 280 && difTime < 620 && lastRxValue == 1){
+        if(decodeMethod==0){
+          keelog_code[lround(keelogCounter/8)] = (keelog_code[lround(keelogCounter/8)]>>1)|B00000000;
+        }
+        else{
+          keelog_code[lround(keelogCounter/8)] = (keelog_code[lround(keelogCounter/8)]<<1)|B00000001;
+        }
+        bValidPacket = true;
+      }
+      else if(lastRxValue == 0){
+      }
+      else{
+        keelog_state=1;
+        keelogCounter = 0;
+      }
+     
+      if(bValidPacket){
+        keelogCounter++;
+        if(keelogCounter==66){
+          keelog_vardump();
+          keelogCounter = 0;
+          keelog_state = 0;
+         ///////  glushilka();
+         
+       
+        }
+      }
+    }
+}
+//keelog end
+
+
+
+///uuuaaaaaaaa che ya nadelal)))))))) IIIIIIzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzSTAAAAAAAAAAAAAAAAARRRRRRRRRRzzzzzzz
+
+
+//statline pomba
+void starline_vardump(){
+  if(decodeMethod == 0){
+    Serial.println(" - starline origin - ");
+  }
+  else{
+    Serial.println(" - starline invert - ");
+  }
+
+ 
+  Serial.print(starline_code[0], HEX);
+  Serial.print(starline_code[1], HEX);
+  Serial.print(starline_code[2], HEX);
+  Serial.print(starline_code[3], HEX);
+  Serial.println("-hop");
+  Serial.print(starline_code[4], HEX);
+  Serial.print(starline_code[5], HEX);
+  Serial.print(starline_code[6], HEX);
+  Serial.println("-fix");
+  Serial.print(starline_code[7], HEX);
+  Serial.println("-btn");
+  Serial.print(starline_code[8], HEX);
+  Serial.println("-dop");
+
+///proda vibrosaaaaaaaaaaaaaaaa
+
+
+
+
+
+///proda vibrosaaaaaaaaaaaaaaaa
+
+
+
+ 
+
+
+ 
+  smena = 1;
+
+
+
+ display.clearDisplay();
+
+delay(3);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.setTextSize(1);
+  display.println("invertstarlineCode");
+
+  display.setTextSize(1.5);
+  display.print(starline_code[0], HEX);
+  display.print(starline_code[1], HEX);
+  display.print(starline_code[2], HEX);
+  display.print(starline_code[3], HEX);
+    display.println("-hop");
+      display.print(starline_code[4], HEX);
+  display.print(starline_code[5], HEX);
+  display.print(starline_code[6], HEX);
+    display.println("-fix");   
+  display.print(starline_code[7], HEX); 
+    display.println("-btn");
+     display.print(starline_code[8], HEX); 
+    display.println("-dop");
+    display.println(kk);//////////////////////////otladka
+    delay(10);
+   
+      display.display();
+
+glushilka();///////////////////////////////////////////////glushilka
+
+
+
+
+
+ 
+     
+ 
+  //eprom
+ //  EEPROM.begin(3512);
+
+
+ prefs.begin("kee", false);
+ prefs.begin("sta", false);
+
+
+ if(kk<2){
+///EEPROM.begin(3512);
+ prefs.putUChar("sta0",starline_code[0]);
+ // EEPROM.write(20, starline_code[0]);
+  prefs.putUChar("sta1",starline_code[1]);
+ //   EEPROM.write(21,starline_code[1]);
+  prefs.putUChar("sta2",starline_code[2]);
+ 
+ ///    EEPROM.write(22,starline_code[2]);
+  prefs.putUChar("sta3",starline_code[3]);
+ ///    EEPROM.write(23,starline_code[3]);
+  prefs.putUChar("sta4",starline_code[4]);
+ ///    EEPROM.write(24,starline_code[4]);
+  prefs.putUChar("sta5",starline_code[5]);
+  ///  EEPROM.write(25,starline_code[5]);
+   prefs.putUChar("sta6",starline_code[6]);
+  ///  EEPROM.write(26,starline_code[6]);
+   prefs.putUChar("sta7",starline_code[7]);
+ //    EEPROM.write(27,starline_code[7]);
+  prefs.putUChar("sta8",starline_code[8]);
+  ///  EEPROM.write(28,starline_code[8]);
+
+
+
+   
+    //  EEPROM.commit();
+    //  EEPROM.end();
+      kk = 2;
+     }
+     
+
+
+
+
+
+if(kk>=2){
+
+
+  prefs.begin("kee", false);
+ prefs.begin("sta", false);
+
+
+///EEPROM.begin(3512);
+
+ //EEPROM.write(129,starline_code[0]);////gop 3
+  prefs.putUChar("sta129",starline_code[0]);
+  // Serial.println("-Srab");
+
+  ///////////////////////////////////////////////zapis sverki fix
+
+// EEPROM.write(104,starline_code[4]);
+ prefs.putUChar("sta104",starline_code[4]);
+ //   EEPROM.write(105,starline_code[5]);
+  prefs.putUChar("sta105",starline_code[5]);
+ //   EEPROM.write(106,starline_code[6]);
+  prefs.putUChar("sta106",starline_code[6]);
+//    EEPROM.write(100, starline_code[0]);
+   prefs.putUChar("sta100",starline_code[0]);
+  // EEPROM.commit();
+  //  EEPROM.end();
+
+
+   
+///EEPROM.begin(3512);
+ int hugaS = prefs.getUChar("sta5",0);//sravnenie bitov-FIX-5
+   int hugazioS = prefs.getUChar("sta105",0);//bitov-FIX-5
+    int hugaopS =  prefs.getUChar("sta4",0);;//sravnenie bitovbitov-FIX-4
+    int hugazioopS =  prefs.getUChar("sta104",0);;//bitov-FIX-4
+        int hugaopSA =  prefs.getUChar("sta6",0);;//sbitov-FIX-6
+    int hugazioopSA =  prefs.getUChar("sta106",0);;//bitov-FIX-6
+
+
+
+
+
+
+
+   
+
+
+     int hugaS1bit =  prefs.getUChar("sta129",0);//sravnenie gop 3
+     int hugazioS1bit =  prefs.getUChar("sta0",0);;//gop 3
+
+
+   
+ // int huga = EEPROM.read(0);//sravnenie bitov
+ //  int hugazio = starline_code[0];//
+int zyS=29;
+
+
+  if(hugaS==hugazioS&&hugaopS==hugazioopS&&hugaopSA==hugazioopSA&&hugaS1bit!=hugazioS1bit)//////////////&&hugaS1bit!=hugazioS1bit//////&&hugaS1bit!=hugazioS1bit hop srav
+  {
+
+///EEPROM.begin(3512);
+ prefs.begin("kee", false);
+ prefs.begin("sta", false);
+
+ // EEPROM.write(30, starline_code[0]);
+  prefs.putUChar("sta10",starline_code[0]);
+ //   EEPROM.write(31,starline_code[1]);
+  prefs.putUChar("sta11",starline_code[1]);
+  //   EEPROM.write(32,starline_code[2]);
+   prefs.putUChar("sta12",starline_code[2]);
+  //   EEPROM.write(33,starline_code[3]);
+   prefs.putUChar("sta13",starline_code[3]);
+  //   EEPROM.write(34,starline_code[4]);
+   prefs.putUChar("sta14",starline_code[4]);
+  //  EEPROM.write(35,starline_code[5]);
+   prefs.putUChar("sta15",starline_code[5]);
+   // EEPROM.write(36,starline_code[6]);
+    prefs.putUChar("sta16",starline_code[6]);
+    // EEPROM.write(37,starline_code[7]);
+     prefs.putUChar("sta17",starline_code[7]);
+   // EEPROM.write(38,starline_code[8]);
+    prefs.putUChar("sta18",starline_code[8]);
+    //  EEPROM.commit();
+    //  EEPROM.end();
+  kk = 0;
+    int zil=0;
+    for(int i = 30; i<39; i++){
+     
+//EEPROM.begin(3512);
+      hugaz[0] = prefs.getUChar("sta10", 0);
+        hugaz[1] = prefs.getUChar("sta11", 0);
+          hugaz[2] = prefs.getUChar("sta12", 0);
+            hugaz[3] = prefs.getUChar("sta13", 0);
+              hugaz[4] = prefs.getUChar("sta14", 0);
+                hugaz[5] = prefs.getUChar("sta15", 0);
+                  hugaz[6] = prefs.getUChar("sta16", 0);
+                    hugaz[7] = prefs.getUChar("sta17", 0);
+                      hugaz[8] = prefs.getUChar("sta18", 0);
+   
+     display.print(hugaz[zil],HEX);
+      delay(3);
+     
+      display.display();
+     
+     
+       zil++;
+     
+  }
+ 
+
+  }//proverennaya
+ prefs.begin("kee", false);
+ prefs.begin("sta", false);
+
+int hugazioS1bit30 = prefs.getUChar("sta10", 0);
+
+  if(hugaS==hugazioS&&hugaopS==hugazioopS&&hugaopSA==hugazioopSA&&hugaS1bit==hugazioS1bit30) {
+
+kk = 0;
+glushilka();
+   
+  }
+
+
+  if(hugaS!=hugazioS&&hugaopS!=hugazioopS&&hugaopSA!=hugazioopSA) {
+
+kk = 0;
+glushilka();
+   
+  }
+
+
+
+   
+}
+     
+     
+ 
+ 
+
+//srav fixEEPROM.begin(3512);
+///EEPROM.begin(3512);
+ prefs.begin("kee", false);
+ prefs.begin("sta", false);
+
+
+     int huga4S =prefs.getUChar("sta4", 0);
+             int huga44S =prefs.getUChar("sta14", 0);
+//
+//
+            int huga4Skop =prefs.getUChar("sta5", 0);
+              int huga44Skop =prefs.getUChar("sta15", 0);
+
+
+
+if(huga4S==huga44S&&huga44Skop==huga4Skop){
+     display.println();
+     display.print("one pack sig");
+      delay(10);
+     
+      display.display(); 
+         
+  } 
+
+
+//pak2
+
+// for(int li = 10; li<19; li++){
+       
+
+//    int i=0;
+   
+//    keelog_codePAK2[i]=EEPROM.read(li);
+   
+//     Serial.print(keelog_codePAK2[i],HEX);
+//      delay(100);
+ //     i++;
+
+       
+ //    Serial.print(keelog_codePAK2[i],HEX);
+     
+       
+ // }
+////EEPROM.begin(3512);
+ prefs.begin("kee", false);
+ prefs.begin("sta", false);
+
+
+ starline_codePAK2[0]=prefs.getUChar("sta10", 0);
+ // starline_codePAK2[1]=EEPROM.read(31);
+ starline_codePAK2[1]=prefs.getUChar("sta11", 0);
+///   starline_codePAK2[2]=EEPROM.read(32);
+starline_codePAK2[2]=prefs.getUChar("sta12", 0);
+///   starline_codePAK2[3]=EEPROM.read(33);
+starline_codePAK2[3]=prefs.getUChar("sta13", 0);
+///   starline_codePAK2[4]=EEPROM.read(34);
+starline_codePAK2[4]=prefs.getUChar("sta14", 0);
+ ///  starline_codePAK2[5]=EEPROM.read(35);
+ starline_codePAK2[5]=prefs.getUChar("sta15", 0);
+ ///  starline_codePAK2[6]=EEPROM.read(36);
+ starline_codePAK2[6]=prefs.getUChar("sta16", 0);
+ ////  starline_codePAK2[7]=EEPROM.read(37);
+ starline_codePAK2[7]=prefs.getUChar("sta17", 0);
+ //  starline_codePAK2[8]=EEPROM.read(38);
+ starline_codePAK2[8]=prefs.getUChar("sta18", 0);
+
+
+
+
+  starline_codePAK1[0]=prefs.getUChar("sta0", 0);
+ // starline_codePAK2[1]=EEPROM.read(31);
+ starline_codePAK1[1]=prefs.getUChar("sta1", 0);
+///   starline_codePAK2[2]=EEPROM.read(32);
+starline_codePAK1[2]=prefs.getUChar("sta2", 0);
+///   starline_codePAK2[3]=EEPROM.read(33);
+starline_codePAK1[3]=prefs.getUChar("sta3", 0);
+///   starline_codePAK2[4]=EEPROM.read(34);
+starline_codePAK1[4]=prefs.getUChar("sta4", 0);
+ ///  starline_codePAK2[5]=EEPROM.read(35);
+ starline_codePAK1[5]=prefs.getUChar("sta5", 0);
+ ///  starline_codePAK2[6]=EEPROM.read(36);
+ starline_codePAK1[6]=prefs.getUChar("sta6", 0);
+ ////  starline_codePAK2[7]=EEPROM.read(37);
+ starline_codePAK1[7]=prefs.getUChar("sta7", 0);
+ //  starline_codePAK2[8]=EEPROM.read(38);
+ starline_codePAK1[8]=prefs.getUChar("sta8", 0);
+
+
+ //for(int i = 0; i<9; i++){
+ 
+       
+ //    Serial.println(starline_codePAK2[i],HEX);
+//      delay(100);       
+ // }
+
+ // int huga =EEPROM.read(0);
+//    int huga1 =EEPROM.read(1);
+ //    int huga2 =EEPROM.read(2);
+ //     int huga3 =EEPROM.read(3);
+  //       int huga4 =EEPROM.read(4);
+  //          int huga5 =EEPROM.read(5);
+   //            int huga6 =EEPROM.read(6);
+               
+  //                int huga7 =EEPROM.read(7);
+ //                    int huga8 =EEPROM.read(8);
+ 
+
+//  display.setTextColor(WHITE); 
+//  display.setTextSize(1);   
+//    display.print(huga,HEX);
+//     display.print(huga1,HEX);
+//     display.print(huga2,HEX);
+ //    display.print(huga3,HEX);
+//      display.print(huga4,HEX);
+//       display.print(huga5,HEX);
+//        display.print(huga6,HEX);
+//         display.print(huga1,HEX);
+//         display.print(huga7,HEX);
+//          display.print(huga8,HEX);
+//    delay(100);
+//    display.display();
+   
+    //Serial.println(EEPROM.read(0),HEX); // выводим значение в послед. порт
+ 
+
+ 
+  //
+  /*for(int i = 0; i<9; i++){
+    Serial.print(starline_code[i], HEX);
+    Serial.print(" - ");
+  }*/
+//  starline_send(starline_code);
+ 
+//  digitalWrite(TX, HIGH);
+//  delay(100);
+//  digitalWrite(TX, LOW);
+//   starline_sendPAK2(starline_codePAK2);
+//  starline_state = 0;
+// for(int i = 0; i<9; i++){
+//    starline_code[i]=0;
+ // }
+
+
+ 
+}
+void starline_send(byte* starline_code){
+  Serial.println("- sending staray -");
+  for(int i = 0; i<9; i++){
+    Serial.print(starline_code[i], HEX);
+    Serial.print(" - ");
+  }
+  for(int i = 0; i<13; i++){//посылаем преамблу//13 srab
+    send_meander(1000);
+  }
+ // digitalWrite(TX, HIGH);
+//  delayMicroseconds(1000);
+//  digitalWrite(TX, LOW);
+ // delayMicroseconds(4000);//посылаем хедер
+ 
+  for( int i = 0; i<9; i++){
+    if(decodeMethod==1){
+      for(int i2 = 7;i2>=0;i2--){
+        if(bitRead(starline_code[i], i2)){
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(250);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(250);
+        }
+        else{
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(500);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(500);
+        }
+      }
+    }
+    else{
+        for(int i2 = 0;i2<8;i2++){
+          if(!bitRead(starline_code[i], i2)){
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(250);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(250);
+          }
+          else{
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(500);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(500);
+          }
+       }
+    }
+   
+  }
+}
+
+
+
+
+
+
+
+
+//pak2
+
+
+void starline_sendPAK2(byte* starline_codePAK2){
+  Serial.println("- sending staraylayn -ss-");
+  for(int i = 0; i<9; i++){
+    Serial.print(starline_codePAK2[i], HEX);
+    Serial.print(" -zz ");
+  }
+  for(int i = 0; i<13; i++){//посылаем преамблу
+    send_meander(1000);
+  }
+//  digitalWrite(TX, HIGH);
+ // delayMicroseconds(400);
+//  digitalWrite(TX, LOW);
+//  delayMicroseconds(4000);//посылаем хедер
+ 
+  for( int i = 0; i<9; i++){
+    if(decodeMethod==1){
+      for(int i2 = 7;i2>=0;i2--){
+        if(bitRead(starline_codePAK2[i], i2)){
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(250);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(250);
+        }
+        else{
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(500);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(500);
+        }
+      }
+    }
+    else{
+        for(int i2 = 0;i2<8;i2++){
+          if(!bitRead(starline_codePAK2[i], i2)){
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(250);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(250);
+          }
+          else{
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(500);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(500);
+          }
+       }
+    }
+   
+  }
+}
+
+
+
+
+
+
+void starline_get(){
+    bValidPacket = false;
+    if(starline_state==0){//ждем преамбулу и хедер
+      if(difTime2 > 900 && difTime2 < 1100 && lastRxValue ==1 ){
+        starlineZpreambulaCounter ++;
+       
+      }
+   
+
+      if(starlineZpreambulaCounter==6){
+         
+            starline_state=1;         
+        }
+
+       //  else{       
+     //  starlineZCounter = 0;
+     // }
+ 
+    }
+
+    /////////////////////////////////////////////////////PREAMBULA STARA///////////////////////////////////////////////////////////////////////////
+    else if(starline_state==1){// получаем биты
+      if(difTime2 > 350 && difTime2 < 650 && lastRxValue == 1){// получили 1
+        if(decodeMethod==0){
+          starline_code[lround(starlineZCounter/8)] = (starline_code[lround(starlineZCounter/8)]>>1)|B10000000;
+        }
+        else{
+          starline_code[lround(starlineZCounter/8)] = (starline_code[lround(starlineZCounter/8)]<<1)|B00000000;
+        }
+        bValidPacket = true;
+      }
+      else if(difTime2 > 150 && difTime2 < 350 && lastRxValue == 1){
+        if(decodeMethod==0){
+          starline_code[lround(starlineZCounter/8)] = (starline_code[lround(starlineZCounter/8)]>>1)|B00000000;
+        }
+        else{
+          starline_code[lround(starlineZCounter/8)] = (starline_code[lround(starlineZCounter/8)]<<1)|B00000001;
+        }
+        bValidPacket = true;
+      }
+      else if(lastRxValue == 0){
+      }
+      else{
+        starline_state=1;
+        starlineZCounter = 0;
+      }
+     
+      if(bValidPacket){
+        starlineZCounter++;
+        if(starlineZCounter==64){           //64ili66
+          starline_vardump();
+          starlineZCounter = 0;
+          starline_state = 0;
+          starlineZpreambulaCounter = 0; /////////novshetch
+          starkk++;                   /////////shetchik
+          glushilka();
+
+
+
+
+       
+        }
+      }
+    }
+}
+//stara end  zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzSSSSTTTTTARRRRRRRRRRRRZZZZZZZZZZZZZZZZzzzzzzzzzzzz
+
+
+void startgrabber(){
+
+
+
+
+
+
+tempRxValue = digitalRead(rxPin);
+
+if(tempRxValue != lastRxValue){
+tempTime = micros();
+difTime = tempTime - lastRxTime;
+difTime2 = tempTime - lastRxTime;
+keelog_get();
+starline_get();
+//grab(tempTime - lastRxTime, lastRxValue);
+
+lastRxTime = tempTime;
+lastRxValue = tempRxValue;
+
+
+ 
+}
+}
+ 
+//menu UUUUUUUUUUUUUUUUUUUMENUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU
+
+void grabmenu(){
+
+
+
+
+
+
+ 
+  drawMenu();
+
+  downButtonState = digitalRead(D12);
+///  selectButtonState = digitalRead(D13);
+ 
+  selectButtonState = digitalRead(4);
+  upButtonState =   digitalRead(D14);
+
+
+
+ 
+
+
+
+
+ selectButtonState2 = digitalRead(32);
+
+ 
+  checkIfDownButtonIsPressed();
+  checkIfUpButtonIsPressed();
+  checkIfSelectButtonIsPressed();
+
+  if (up && page == 1 ) {
+    up = false;
+
+     
+    menuitem--;
+   
+
+    if (menuitem==0)
+    {
+      menuitem=4;
+    }     
+
+
+
+ 
+   
+  }else if (up && page == 2 ) {
+    up = false;
+    contrast--;
+    setContrast();
+  }
+
+
+  if (down && page == 1) {
+    down = false;
+    menuitem++;
+   
+
+    if (menuitem==5)
+    {
+      menuitem=1;
+    }     
+  }
+ 
+  else if (down && page == 2 )
+  {
+    down = false;
+    contrast++;
+    setContrast();
+  }
+
+
+
+  //5stranica 
+
+  if (up && page == 5 ) {
+    up = false;
+    menuitem--;
+   
+
+
+        if (menuitem==0)
+    {
+      menuitem=1;
+    } 
+   
+  }
+
+ if (down && page == 5) {
+    down = false;
+    menuitem++;
+    kiop++;
+   
+
+    if (menuitem==5)
+    {
+      menuitem=1;
+    }     
+  }
+
+
+
+  ////////////////////////////////
+
+
+    //3stranica 
+
+  if (up && page == 3 ) {
+    up = false;
+    menuitem--;
+   
+
+
+        if (menuitem==0)
+    {
+      menuitem=1;
+    } 
+   
+  }
+
+ if (down && page == 3) {
+    down = false;
+    menuitem++;
+    kiop++;
+   
+
+    if (menuitem==5)
+    {
+      menuitem=1;
+    }     
+  }
+
+
+
+  ////////////////////////////////
+
+
+  /////////////////////////////////////////////////11/////////////////////////////////////////////////////////////////
+ if (up && page == 11 ) {
+    up = false;
+    menuitem--;
+ 
+
+
+        if (menuitem==0)
+    {
+      menuitem=1;
+    } 
+   
+  }
+
+ if (down && page == 11) {
+    down = false;
+    menuitem++;
+    kiop++;
+   
+
+    if (menuitem==5)
+    {
+      menuitem=1;
+    }     
+  }
+
+
+/////////////////////////////////////////////////11 END/////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////20/////////////////////////////////////////////////////////////////////////
+
+
+ if (up && page == 20 ) {
+    up = false;
+    menuitem--;
+ 
+
+
+        if (menuitem==0)
+    {
+      menuitem=1;
+    } 
+   
+  }
+
+ if (down && page == 20) {
+    down = false;
+    menuitem++;
+    kiop3++;
+ 
+
+    if (menuitem==5)
+    {
+      menuitem=1;
+    }     
+  }
+ 
+
+
+  if (middle) {
+    middle = false;
+   
+    if (page == 1 && menuitem==2)
+    {
+
+
+
+page=5;
+chistikmemory();
+
+
+    }
+
+/////5 STR VIBOR
+
+  if (page == 5 && menuitem==1)
+    {
+
+
+
+page=6;
+chistikmemorystar();
+
+
+    }
+
+
+/////////////////////////////
+
+    if (page == 5 && menuitem==4)
+    {
+
+
+
+page=7;
+chistikmemorykeeloq();
+
+
+    }
+
+
+
+
+    if (page == 5 && menuitem==2&&kiop>=3)
+    {
+
+
+
+page=8;
+chistikmemory();
+
+
+
+    }
+
+
+   
+/////5 STR VIBOR END
+
+
+///////////////////////////////////////PAGE 9 VIBOR///////////////////////////////////
+
+
+ if (page == 3 && menuitem==1)
+    {
+
+
+
+page=9;
+
+
+
+    }
+
+
+
+
+
+     if (page == 3 && menuitem==2)
+    {
+
+
+
+page=10;
+
+
+
+    }
+
+
+      if (page == 3 && menuitem==4)
+    {
+
+
+
+page=20;
+
+
+
+    }
+
+
+
+
+
+
+    /////////////////////////////////////////////////11///////////////////////////////////
+
+
+    if (page == 11 && menuitem==1)
+    {
+
+
+
+page=12;
+
+
+
+    }
+
+
+
+
+
+     if (page == 11 && menuitem==2)
+    {
+
+
+page=13;
+
+
+
+    }
+
+
+   
+     if (page == 11 && menuitem==3)
+    {
+
+
+
+page=14;
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////PAGE 9 VIBOR   END///////////////////////////////////
+
+
+
+   ////////////////////////////20////////////////////////////////////
+
+
+
+     if (page == 20 && menuitem==1)
+    {
+
+
+
+page=15;
+
+
+
+    }
+
+
+
+
+
+     if (page == 20 && menuitem==2)
+    {
+
+
+
+page=21;
+
+
+
+    }
+
+
+       if (page == 20 && menuitem==4&&kiop3>3)
+    {
+
+
+page=22;
+
+
+
+    }
+
+
+   
+     if (page == 20 && menuitem==3)
+    {
+
+
+
+page=1;
+
+
+
+    }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   
+
+    if(page == 1 && menuitem ==3)
+    {
+ 
+
+     page=11;
+    }
+
+
+ if(page == 1 && menuitem ==4)
+    {
+   
+
+       page=3;
+    }
+
+
+else if (page == 1 && menuitem==1) {
+
+
+      page=4;
+       chistik();
+     }
+else if (page == 2) {
+ 
+
+      page=1;
+     }
+
+
+else if (page == 3) {
+  if(digitalRead(D13)==LOW&&digitalRead(D14)==LOW){
+
+
+
+    page=1;
+}
+     }
+
+
+     else if (page == 4) {
+ 
+
+      page=1;
+     }
+
+
+  else if (page == 5) {
+
+
+     if(digitalRead(D13)==LOW&&digitalRead(D14)==LOW){
+
+
+
+    page=1;
+}
+
+
+
+
+
+   
+     }
+
+
+     /////////////////////////////////////////11
+
+     
+
+
+
+     //////////////////////////////////////////9 PAGE//////////////////////////////
+
+      else if (page == 9) {
+
+
+     if(digitalRead(D13)==LOW&&digitalRead(D14)==LOW){
+
+
+
+    page=3;
+}
+
+
+
+
+
+   
+     }
+
+
+       else if (page == 10) {
+
+
+     if(digitalRead(D13)==LOW&&digitalRead(D14)==LOW){
+
+
+
+    page=3;
+}
+
+
+
+
+
+   
+     }
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+     else if (page == 6) {
+
+
+     if(digitalRead(D13)==LOW&&digitalRead(D14)==LOW){
+
+
+
+    page=1;
+}
+   
+     }
+
+
+
+      else if (page == 7) {
+
+
+     if(digitalRead(D13)==LOW&&digitalRead(D14)==LOW){
+
+
+
+    page=1;
+}
+   
+     }
+
+
+
+
+      else if (page == 11) {
+
+
+     if(digitalRead(D13)==LOW&&digitalRead(D14)==LOW){
+
+
+
+    page=1;
+}
+   
+     }
+
+
+
+     ////////////////////////////////////////////////12//////////////////////
+        else if (page == 12) {
+
+
+     if(digitalRead(D13)==LOW&&digitalRead(D14)==LOW){
+
+
+
+    page=11;
+}
+   
+     }
+     /////////////////////////////////////////////////////////////////////13///////////////////////////////////////////
+        else if (page == 13) {
+
+
+     if(digitalRead(D13)==LOW&&digitalRead(D14)==LOW){
+
+
+
+    page=1;
+}
+   
+     }
+
+
+     /////////////////////////////////////////////////////////////    14
+
+        else if (page == 14) {
+
+
+     if(digitalRead(D13)==LOW&&digitalRead(D14)==LOW){
+
+
+    page=11;
+}
+   
+     }
+
+
+
+
+
+       else if (page == 15) {
+
+
+     if(digitalRead(D13)==LOW&&digitalRead(D14)==LOW){
+
+
+
+    page=1;
+}
+   
+     }
+
+
+     
+       else if (page == 20) {
+
+
+     if(digitalRead(D13)==LOW&&digitalRead(D14)==LOW){
+
+
+
+    page=1;
+}
+   
+     }
+
+
+
+
+
+      else if (page == 21) {
+
+
+     if(digitalRead(D13)==LOW&&digitalRead(D14)==LOW){
+
+
+
+    page=1;
+}
+   
+     }
+
+
+
+   else if (page == 22) {
+
+
+     if(digitalRead(D13)==LOW&&digitalRead(D14)==LOW){
+
+
+
+    page=1;
+}
+   
+     }
+
+
+
+
+
+
+     
+
+
+        else if (page == 8) {
+
+          delay(300);
+
+
+     if(digitalRead(D13)==LOW){
+
+
+
+    page=1;
+   
+}
+   
+     }
+
+
+
+     
+   
+
+   
+   }
+ 
+ 
+}
+
+
+
+
+  void checkIfDownButtonIsPressed()
+  {
+ 
+   if (VBAT<10)
+    {
+      down=true;
+    }
+ 
+    if (downButtonState != lastDownButtonState)
+  {
+    if (downButtonState == 0)
+    {
+      down=true;
+    }
+    delay(50);
+  }
+   lastDownButtonState = downButtonState;
+  }
+
+void checkIfUpButtonIsPressed()
+{
+
+ if (VBAT>15) {
+      up=true;
+    }
+
+  if (upButtonState != lastUpButtonState)
+  {
+    if (upButtonState == 0) {
+      up=true;
+    }
+    delay(50);
+  }
+   lastUpButtonState = upButtonState;
+}
+
+void checkIfSelectButtonIsPressed()
+{
+
+ 
+ 
+
+   if (selectButtonState != lastSelectButtonState)
+  {
+    if (selectButtonState == 0) {
+      middle=true;
+    }
+ 
+ 
+ 
+ 
+    delay(50);
+  }
+   lastSelectButtonState = selectButtonState;
+}
+
+ 
+  void drawMenu()
+  {
+   
+  if (page==1)
+  {   
+    display.setTextSize(1);
+    display.clearDisplay();
+    display.setTextColor(BLACK, WHITE);
+    display.setCursor(15, 0);
+    display.print("KING GRAB");
+    display.drawFastHLine(0,10,83,BLACK);
+    display.setCursor(0, 15);
+    kiop3 = 0;
+   
+    if (menuitem==1)
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else
+    {
+      display.setTextColor(BLACK, WHITE);
+    }
+    display.print(">KODE GRABBER");
+    display.setCursor(0, 25);
+
+
+
+  ///4 punkt 
+
+
+     if (menuitem==4)
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else
+    {
+      display.setTextColor(BLACK, WHITE);
+    }
+    display.print(">MENU BRO");
+    display.setCursor(0, 35);
+
+   /////////////////
+
+
+   
+    if (menuitem==2)
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else
+    {
+      display.setTextColor(BLACK, WHITE);
+    } 
+    display.setCursor(0, 36); 
+    display.print(">MEMORY");
+   
+    //if (backlight)
+   // {
+   //   display.print("ON");
+  // }
+  //  else
+  //  {
+   //   display.print("OFF");
+ //   }
+    display.display();
+
+   
+   
+    if (menuitem==3)
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+   else
+    {
+      display.setTextColor(BLACK, WHITE);
+    } 
+   display.setCursor(15, 50);
+   display.print("KING-GRAB");
+   display.display();
+  }
+
+
+//5stran
+
+
+if (page==5)
+  {   
+       display.setTextSize(1);
+    display.clearDisplay();
+    display.setTextColor(BLACK, WHITE);
+    display.drawFastHLine(0,10,83,BLACK);
+    display.setCursor(0, 15);
+   
+    if (page==5&&menuitem==1)
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else
+    {
+      display.setTextColor(BLACK, WHITE);
+    }
+    display.print(">STARLINE");
+    display.setCursor(0, 25);
+
+
+
+  ///4 punkt 
+
+
+     if (page==5&&menuitem==4)
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else
+    {
+      display.setTextColor(BLACK, WHITE);
+    }
+    display.print(">KEELOQ");
+    display.setCursor(0, 35);
+
+   /////////////////
+
+
+   
+    if (page==5&&menuitem==2)
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else
+    {
+      display.setTextColor(BLACK, WHITE);
+    } 
+    display.setCursor(0, 36); 
+    display.print(">MEMORYSEND");
+   
+    //if (backlight)
+   // {
+   //   display.print("ON");
+  // }
+  //  else
+  //  {
+   //   display.print("OFF");
+ //   }
+
+
+
+ // if (menuitem==3)
+ //   {
+ //     display.setTextColor(WHITE, BLACK);/////////////NE POMESTILSA
+ //   }
+ //   else
+ //   {
+ //     display.setTextColor(BLACK, WHITE);
+//    }
+ //   display.print(">LONG MEMORY");
+ //   display.setCursor(10, 60);
+ 
+    display.display();
+
+
+   
+   
+
+  }
+
+
+
+//end5 stran
+
+   
+ 
+  else if (page==2)
+  {
+   
+    display.setTextSize(1);
+    display.clearDisplay();
+    display.setTextColor(BLACK, WHITE);
+    display.setCursor(15, 0);
+    display.print("SCAN433");
+    display.drawFastHLine(0,10,83,BLACK);
+    display.setCursor(5, 15);
+    display.print("Value");
+    display.setTextSize(2);
+    display.setCursor(5, 25);
+    display.print(contrast);
+ 
+    display.setTextSize(2);
+    display.display();
+  }
+
+
+
+ else if (page==3)
+  {
+   
+  //  display.setTextSize(1);
+ //   display.clearDisplay();
+  //  display.setTextColor( WHITE);
+ //   display.setCursor(15, 0);
+//    display.print("PRIEM433");
+ //   display.drawFastHLine(0,10,83,BLACK);
+ 
+  //  display.display();
+
+  display.setTextSize(1);
+    display.clearDisplay();
+    display.setTextColor(BLACK, WHITE);
+    display.drawFastHLine(0,10,83,BLACK);
+    display.setCursor(0, 15);
+   
+    if (page==3&&menuitem==1)
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else
+    {
+      display.setTextColor(BLACK, WHITE);
+    }
+    display.print(">MEMORY RESEND");
+    display.setCursor(0, 25);
+
+
+
+  ///4 punkt 
+
+
+     if (page==3&&menuitem==4)
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else
+    {
+      display.setTextColor(BLACK, WHITE);
+    }
+    display.print(">MENU-BRO2");
+    display.setCursor(0, 35);
+
+   /////////////////
+
+
+   
+    if (page==3&&menuitem==2)
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else
+    {
+      display.setTextColor(BLACK, WHITE);
+    } 
+    display.setCursor(0, 36); 
+    display.print(">SENDINGBTNR");
+   
+    //if (backlight)
+   // {
+   //   display.print("ON");
+  // }
+  //  else
+  //  {
+   //   display.print("OFF");
+ //   }
+
+
+
+ // if (menuitem==3)
+ //   {
+ //     display.setTextColor(WHITE, BLACK);/////////////NE POMESTILSA
+ //   }
+ //   else
+ //   {
+ //     display.setTextColor(BLACK, WHITE);
+//    }
+ //   display.print(">LONG MEMORY");
+ //   display.setCursor(10, 60);
+ 
+    display.display();
+ 
+  }
+
+
+
+  if(page==8){
+
+kiop = 0;
+     display.setTextSize(2);
+  display.clearDisplay();
+  display.setTextColor( WHITE);
+   display.setCursor(0, 0);
+   display.print("SENDTOWEB");
+  display.drawFastHLine(0,10,83,BLACK);
+ 
+   display.display();
+
+
+if(digitalRead(D14)==LOW){
+
+
+
+//display.clearDisplay();
+
+
+  display.setTextSize(1);
+   
+    display.setTextColor( WHITE);
+
+display.setCursor(0, 45);
+display.print("keyloh-na-webe");
+ display.display();
+ delay(300);
+ sendtowebkeyloh();
+ 
+}
+
+
+if(digitalRead(D12)==LOW){
+
+
+
+//display.clearDisplay();           /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+  display.setTextSize(1);
+   
+    display.setTextColor( WHITE);
+display.setCursor(0, 30);
+display.print("star-na-webe");
+ display.display();
+ delay(300);
+ sendtowebstar();
+ 
+}
+
+
+   
+  }
+
+
+  if(page==6){
+
+
+   if(digitalRead(D14)==LOW){
+
+posilstarline2zapis();
+ 
+}
+
+
+
+if(digitalRead(D12)==LOW){
+
+posilstarline1zapis();
+ 
+}
+
+
+   //end page 5 scobca
+  }
+
+
+
+//////////////PAGR 7
+
+ if(page==7){
+
+
+   if(digitalRead(D14)==LOW){
+
+posilkeeloq2zapis();
+ 
+}
+
+
+
+if(digitalRead(D12)==LOW){
+
+posilkeeloq1zapis();
+ 
+}
+
+
+   //end page 7 scobca
+  }
+
+////////////PAGR 7 END
+
+
+if (page==9) {
+
+
+   display.setTextSize(1);
+  display.clearDisplay();
+  display.setTextColor( WHITE);
+   display.setCursor(0, 0);
+   display.print("memory-rewrite");
+  display.drawFastHLine(0,10,83,BLACK);
+  display.println();
+   display.println("up-sohranennokeeloq");
+   display.println();
+   display.println("dwn-sohranennostar");
+   display.println();
+   display.println(yacheyka);
+    display.print("bank");
+ 
+   display.display();
+
+   if(digitalRead(D12)==LOW){
+
+    prefs.begin("mem", false);
+    prefs.putUChar("mem"+yacheyka, prefs.getUChar("keez0", 0));
+
+
+// EEPROM.write(150+yacheyka, EEPROM.read(50));
+ prefs.putUChar("mem"+yacheyka+1, prefs.getUChar("keez1", 0));
+ //   EEPROM.write(151+yacheyka,EEPROM.read(51));
+  prefs.putUChar("mem"+yacheyka+2, prefs.getUChar("keez2", 0));
+ //    EEPROM.write(152+yacheyka,EEPROM.read(52));
+  prefs.putUChar("mem"+yacheyka+3, prefs.getUChar("keez3", 0));
+ //    EEPROM.write(153+yacheyka,EEPROM.read(53));
+  prefs.putUChar("mem"+yacheyka+4, prefs.getUChar("keez4", 0));
+//     EEPROM.write(154+yacheyka,EEPROM.read(54));
+ prefs.putUChar("mem"+yacheyka+5, prefs.getUChar("keez5", 0));
+ //   EEPROM.write(155+yacheyka,EEPROM.read(55));
+  prefs.putUChar("mem"+yacheyka+6, prefs.getUChar("keez6", 0));
+//// //  EEPROM.write(156+yacheyka,EEPROM.read(56));
+ prefs.putUChar("mem"+yacheyka+7, prefs.getUChar("keez7", 0));
+  //   EEPROM.write(157+yacheyka,EEPROM.read(57));
+   prefs.putUChar("mem"+yacheyka+8, prefs.getUChar("keez8", 0));
+  //  EEPROM.write(158+yacheyka,EEPROM.read(58));
+
+//    EEPROM.commit();
+//  EEPROM.end();
+    delay(100);
+
+//    EEPROM.begin(3512);
+// EEPROM.write(160+yacheyka, EEPROM.read(60));
+ //   EEPROM.write(161+yacheyka,EEPROM.read(61));
+ ///    EEPROM.write(162+yacheyka,EEPROM.read(62));
+ ///    EEPROM.write(163+yacheyka,EEPROM.read(63));
+ ///    EEPROM.write(164+yacheyka,EEPROM.read(64));
+  ///  EEPROM.write(165+yacheyka,EEPROM.read(65));
+ ///   EEPROM.write(166+yacheyka,EEPROM.read(66));
+  ///  EEPROM.write(167+yacheyka,EEPROM.read(67));
+ ///   EEPROM.write(168+yacheyka,EEPROM.read(68));
+
+prefs.begin("mem", false);
+     prefs.putUChar("mem"+yacheyka+10, prefs.getUChar("keez10", 0));
+
+
+// EEPROM.write(150+yacheyka, EEPROM.read(50));
+ prefs.putUChar("mem"+yacheyka+11, prefs.getUChar("keez11", 0));
+ //   EEPROM.write(151+yacheyka,EEPROM.read(51));
+  prefs.putUChar("mem"+yacheyka+12, prefs.getUChar("keez12", 0));
+ //    EEPROM.write(152+yacheyka,EEPROM.read(52));
+  prefs.putUChar("mem"+yacheyka+13, prefs.getUChar("keez13", 0));
+ //    EEPROM.write(153+yacheyka,EEPROM.read(53));
+  prefs.putUChar("mem"+yacheyka+14, prefs.getUChar("keez14", 0));
+//     EEPROM.write(154+yacheyka,EEPROM.read(54));
+ prefs.putUChar("mem"+yacheyka+15, prefs.getUChar("keez15", 0));
+ //   EEPROM.write(155+yacheyka,EEPROM.read(55));
+  prefs.putUChar("mem"+yacheyka+16, prefs.getUChar("keez16", 0));
+//// //  EEPROM.write(156+yacheyka,EEPROM.read(56));
+ prefs.putUChar("mem"+yacheyka+17, prefs.getUChar("keez17", 0));
+  //   EEPROM.write(157+yacheyka,EEPROM.read(57));
+   prefs.putUChar("mem"+yacheyka+18, prefs.getUChar("keez18", 0));
+  //  EEPROM.write(158+yacheyka,EEPROM.read(58));
+
+//    EEPROM.commit();
+//  EEPROM.end();
+    delay(100);
+
+ 
+//  EEPROM.commit();
+///  EEPROM.end();
+
+  //vibros na displey
+display.clearDisplay();
+display.setCursor(0, 0);
+ display.setTextSize(1);   
+    display.println("sohranennokeeloq");
+  //  EEPROM.begin(3512);
+  prefs.begin("mem", false);
+display.print(prefs.getUChar("mem"+yacheyka, 0),HEX);
+   
+   // display.print(EEPROM.read(151+yacheyka),HEX);
+   display.print(prefs.getUChar("mem"+yacheyka+1, 0),HEX);
+  ///  display.print(EEPROM.read(152+yacheyka),HEX);
+  display.print(prefs.getUChar("mem"+yacheyka+2, 0),HEX);
+  ////  display.print(EEPROM.read(153+yacheyka),HEX);
+  display.print(prefs.getUChar("mem"+yacheyka+3, 0),HEX);
+  ////  display.print(EEPROM.read(154+yacheyka),HEX);
+  display.print(prefs.getUChar("mem"+yacheyka+4, 0),HEX);
+  ////  display.print(EEPROM.read(155+yacheyka),HEX);
+  display.print(prefs.getUChar("mem"+yacheyka+5, 0),HEX);
+  ///  display.print(EEPROM.read(156+yacheyka),HEX);
+  display.print(prefs.getUChar("mem"+yacheyka+6, 0),HEX);
+  ///  display.print(EEPROM.read(157+yacheyka),HEX);
+  display.print(prefs.getUChar("mem"+yacheyka+7, 0),HEX);
+  ///  display.print(EEPROM.read(158+yacheyka),HEX);
+  display.print(prefs.getUChar("mem"+yacheyka+8, 0),HEX);
+    display.println();
+delay(100);
+     display.println("sohranennokeeloq");
+     
+   // EEPROM.begin(3512);
+ ///   display.print(EEPROM.read(160+yacheyka),HEX);
+ display.print(prefs.getUChar("mem"+yacheyka+10, 0),HEX);
+   
+ ///   display.print(EEPROM.read(161+yacheyka),HEX);
+  display.print(prefs.getUChar("mem"+yacheyka+11, 0),HEX);
+ //   display.print(EEPROM.read(162+yacheyka),HEX);
+  display.print(prefs.getUChar("mem"+yacheyka+12, 0),HEX);
+ ///   display.print(EEPROM.read(163+yacheyka),HEX);
+  display.print(prefs.getUChar("mem"+yacheyka+13, 0),HEX);
+ ///   display.print(EEPROM.read(164+yacheyka),HEX);
+  display.print(prefs.getUChar("mem"+yacheyka+14, 0),HEX);
+///    display.print(EEPROM.read(165+yacheyka),HEX);
+ display.print(prefs.getUChar("mem"+yacheyka+15, 0),HEX);
+ ///   display.print(EEPROM.read(166+yacheyka),HEX);
+  display.print(prefs.getUChar("mem"+yacheyka+16, 0),HEX);
+ ///   display.print(EEPROM.read(167+yacheyka),HEX);
+  display.print(prefs.getUChar("mem"+yacheyka+17, 0),HEX);
+ ///   display.print(EEPROM.read(168+yacheyka),HEX);
+  display.print(prefs.getUChar("mem"+yacheyka+18, 0),HEX);
+    display.println();
+
+   
+    display.println();
+    display.display();
+    delay(3000);
+
+
+
+ 
+}
+
+
+ if(digitalRead(D13)==LOW){
+ 
+ 
+ 
+ yacheyka=yacheyka+100;
+ delay(300);
+ 
+ if(yacheyka>=1000){
+ 
+ yacheyka = 0;
+ }
+ 
+ 
+ 
+ 
+ 
+ }
+
+
+
+
+ if(digitalRead(D14)==LOW){
+
+
+
+///EEPROM.begin(3512);
+  prefs.begin("mems", false);
+    prefs.putUChar("mems"+yacheyka, prefs.getUChar("starz0", 0));
+
+// EEPROM.write(170+yacheyka, EEPROM.read(70));
+ prefs.putUChar("mems"+yacheyka+1, prefs.getUChar("starz1", 0));
+///    EEPROM.write(171+yacheyka,EEPROM.read(71));
+ prefs.putUChar("mems"+yacheyka+2, prefs.getUChar("starz2", 0));
+//     EEPROM.write(172+yacheyka,EEPROM.read(72));
+ prefs.putUChar("mems"+yacheyka+3, prefs.getUChar("starz3", 0));
+//     EEPROM.write(173+yacheyka,EEPROM.read(73));
+ prefs.putUChar("mems"+yacheyka+4, prefs.getUChar("starz4", 0));
+//     EEPROM.write(174+yacheyka,EEPROM.read(74));
+ prefs.putUChar("mems"+yacheyka+5, prefs.getUChar("starz5", 0));
+ //   EEPROM.write(175+yacheyka,EEPROM.read(75));
+  prefs.putUChar("mems"+yacheyka+6, prefs.getUChar("starz6", 0));
+ //   EEPROM.write(176+yacheyka,EEPROM.read(76));
+  prefs.putUChar("mems"+yacheyka+7, prefs.getUChar("starz7", 0));
+ //    EEPROM.write(177+yacheyka,EEPROM.read(77));
+  prefs.putUChar("mems"+yacheyka+8, prefs.getUChar("starz8", 0));
+  //  EEPROM.write(178+yacheyka,EEPROM.read(78));
+ //   EEPROM.commit();
+ // EEPROM.end();
+    delay(100);
+
+
+   
+//EEPROM.begin(3512);
+  prefs.begin("mems", false);
+   
+ //EEPROM.write(180+yacheyka, EEPROM.read(80));
+  prefs.putUChar("mems"+yacheyka+10, prefs.getUChar("starz10", 0));
+//    EEPROM.write(181+yacheyka,EEPROM.read(81));
+  prefs.putUChar("mems"+yacheyka+11, prefs.getUChar("starz11", 0));
+ //    EEPROM.write(182+yacheyka,EEPROM.read(82));
+   prefs.putUChar("mems"+yacheyka+12, prefs.getUChar("starz12", 0));
+ //    EEPROM.write(183+yacheyka,EEPROM.read(83));
+   prefs.putUChar("mems"+yacheyka+13, prefs.getUChar("starz13", 0));
+ //    EEPROM.write(184+yacheyka,EEPROM.read(84));
+   prefs.putUChar("mems"+yacheyka+14, prefs.getUChar("starz14", 0));
+ //   EEPROM.write(185+yacheyka,EEPROM.read(85));
+   prefs.putUChar("mems"+yacheyka+15, prefs.getUChar("starz15", 0));
+ //   EEPROM.write(186+yacheyka,EEPROM.read(86));
+   prefs.putUChar("mems"+yacheyka+16, prefs.getUChar("starz16", 0));
+ //   EEPROM.write(187+yacheyka,EEPROM.read(87));
+   prefs.putUChar("mems"+yacheyka+17, prefs.getUChar("starz17", 0));
+ //   EEPROM.write(188+yacheyka,EEPROM.read(88));
+   prefs.putUChar("mems"+yacheyka+18, prefs.getUChar("starz18", 0));
+ delay(100);
+ 
+ // EEPROM.commit();
+ // EEPROM.end();
+
+
+
+////////  /vibros na displey
+display.clearDisplay();
+display.setCursor(0, 0);
+ display.setTextSize(1);   
+    display.println("sohranenno-star");
+   // EEPROM.begin(3512);
+ display.print(prefs.getUChar("mems"+yacheyka, 0),HEX);
+   
+  //  display.print(EEPROM.read(171+yacheyka),HEX);
+   display.print(prefs.getUChar("mems"+yacheyka+1, 0),HEX);
+  //  display.print(EEPROM.read(172+yacheyka),HEX);
+   display.print(prefs.getUChar("mems"+yacheyka+2, 0),HEX);
+ //   display.print(EEPROM.read(173+yacheyka),HEX);
+  display.print(prefs.getUChar("mems"+yacheyka+3, 0),HEX);
+  //  display.print(EEPROM.read(174+yacheyka),HEX);
+   display.print(prefs.getUChar("mems"+yacheyka+4, 0),HEX);
+  //  display.print(EEPROM.read(175+yacheyka),HEX);
+   display.print(prefs.getUChar("mems"+yacheyka+5, 0),HEX);
+  //  display.print(EEPROM.read(176+yacheyka),HEX);
+   display.print(prefs.getUChar("mems"+yacheyka+6, 0),HEX);
+  //  display.print(EEPROM.read(177+yacheyka),HEX);
+   display.print(prefs.getUChar("mems"+yacheyka+7, 0),HEX);
+  //  display.print(EEPROM.read(178+yacheyka),HEX);
+   display.print(prefs.getUChar("mems"+yacheyka+8, 0),HEX);
+
+   
+    display.println();
+delay(100);
+  prefs.begin("mems", false);
+    display.println("sohranenno-star2");
+     display.print(prefs.getUChar("mems"+yacheyka+10, 0),HEX);
+   //   display.print(EEPROM.read(180+yacheyka),HEX);
+       display.print(prefs.getUChar("mems"+yacheyka+11, 0),HEX);
+   //  display.print(EEPROM.read(181+yacheyka),HEX);
+       display.print(prefs.getUChar("mems"+yacheyka+12, 0),HEX);
+  //  display.print(EEPROM.read(182+yacheyka),HEX);
+      display.print(prefs.getUChar("mems"+yacheyka+13, 0),HEX);
+  //  display.print(EEPROM.read(183+yacheyka),HEX);
+      display.print(prefs.getUChar("mems"+yacheyka+14, 0),HEX);
+  //  display.print(EEPROM.read(184+yacheyka),HEX);
+      display.print(prefs.getUChar("mems"+yacheyka+15, 0),HEX);
+  //  display.print(EEPROM.read(185+yacheyka),HEX);
+      display.print(prefs.getUChar("mems"+yacheyka+16, 0),HEX);
+   // display.print(EEPROM.read(186+yacheyka),HEX);
+       display.print(prefs.getUChar("mems"+yacheyka+17, 0),HEX);
+  ////  display.print(EEPROM.read(187+yacheyka),HEX);
+      display.print(prefs.getUChar("mems"+yacheyka+18, 0),HEX);
+   // display.print(EEPROM.read(188+yacheyka),HEX);
+ 
+   
+ 
+   display.display(); 
+
+
+   
+ delay(1000);
+   
+
+
+
+ 
+
+
+ 
+}
+
+
+
+
+
+ 
+}
+//////////////////////////////////////////////////END PAGE 9///////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////PAGE 10///////////////////////////////////////////////////////////////////////
+if (page==10){
+
+     display.setTextSize(1);
+  display.clearDisplay();
+  display.setTextColor( WHITE);
+   display.setCursor(0, 0);
+   display.print("BANK");
+  display.drawFastHLine(0,10,83,BLACK);
+  display.println();
+   display.println("up-button kee");
+   display.println();
+   display.println("dwn-button star");
+      display.println();
+   display.println(yacheyka);
+    display.print("bank");
+ 
+   display.display();
+   
+   
+
+   
+
+int btrgz = random(0,301);
+int btrgzknop = 189;
+///EEPROM.begin(3512);
+ //starline_codePAK2zapisSBTR[0] = EEPROM.read(180+yacheyka);
+//  starline_codePAK2zapisSBTR[1] = EEPROM.read(181+yacheyka);
+ //  starline_codePAK2zapisSBTR[2] = EEPROM.read(182+yacheyka);
+ //   starline_codePAK2zapisSBTR[3] = EEPROM.read(183+yacheyka);
+ //    starline_codePAK2zapisSBTR[4] = EEPROM.read(184+yacheyka);
+  //    starline_codePAK2zapisSBTR[5] = EEPROM.read(185+yacheyka);
+   //    starline_codePAK2zapisSBTR[6] = EEPROM.read(186+yacheyka);
+      ///////// starline_codePAK2zapisSBTR[7] = btrgzknop;
+     ////////////  starline_codePAK2zapisSBTR[7] = btrgz;/////////////////////////////////random knop
+  //    starline_codePAK2zapisSBTR[7] = EEPROM.read(187+yacheyka);
+  //       starline_codePAK2zapisSBTR[8] = EEPROM.read(188+yacheyka);//////////////////2 paket//////////////////////////////////////
+
+delay(50);
+//EEPROM.begin(3512);
+
+    //     starline_codePAK1zapisSBTR[0] = EEPROM.read(170+yacheyka);
+//  starline_codePAK1zapisSBTR[1] = EEPROM.read(171+yacheyka);
+
+   //starline_codePAK1zapisSBTR[2] = btrgzknop;
+// starline_codePAK1zapisSBTR[2] = EEPROM.read(172+yacheyka);
+//    starline_codePAK1zapisSBTR[3] = EEPROM.read(173+yacheyka);
+//     starline_codePAK1zapisSBTR[4] = EEPROM.read(174+yacheyka);
+ //     starline_codePAK1zapisSBTR[5] = EEPROM.read(175+yacheyka);
+  //     starline_codePAK1zapisSBTR[6] = EEPROM.read(176+yacheyka);
+  //      starline_codePAK1zapisSBTR[7] = EEPROM.read(177+yacheyka);
+   //      starline_codePAK1zapisSBTR[8] = EEPROM.read(178+yacheyka);//////////////////1 paket//////////////////////////////////////
+
+
+delay(50);
+
+///////////////////////////////////////////////////////////keyloh//////////////////////////////////////////////
+
+
+
+int btrgzkee = random(0,301);
+//EEPROM.begin(3512);
+//keelog_codePAK2zapisSBTR[0] = EEPROM.read(150+yacheyka);
+//keelog_codePAK2zapisSBTR[1] = EEPROM.read(151+yacheyka);
+//keelog_codePAK2zapisSBTR[2] = EEPROM.read(152+yacheyka);
+//keelog_codePAK2zapisSBTR[3] = EEPROM.read(153+yacheyka);
+//keelog_codePAK2zapisSBTR[4] = EEPROM.read(154+yacheyka);
+//keelog_codePAK2zapisSBTR[5] = EEPROM.read(155+yacheyka);
+//keelog_codePAK2zapisSBTR[6] = EEPROM.read(156+yacheyka);
+
+///keelog_codePAK2zapisSBTR[7] = btrgzkee;
+//keelog_codePAK2zapisSBTR[7] = EEPROM.read(157+yacheyka);
+//keelog_codePAK2zapisSBTR[8] = EEPROM.read(158+yacheyka);
+
+///keelog_codePAK2zapisSBTR[8] = EEPROM.read(158);
+
+///////////////////////////2pak end////////////////
+
+/////////////////////////////////////1 pak
+
+delay(50);
+//EEPROM.begin(3512);
+//keelog_codePAK1zapisSBTR[0] = EEPROM.read(160+yacheyka);
+//keelog_codePAK1zapisSBTR[1] = EEPROM.read(161+yacheyka);
+//keelog_codePAK1zapisSBTR[2] = EEPROM.read(162+yacheyka);
+//keelog_codePAK1zapisSBTR[3] = EEPROM.read(163+yacheyka);
+//keelog_codePAK1zapisSBTR[4] = EEPROM.read(164+yacheyka);
+//keelog_codePAK1zapisSBTR[5] = EEPROM.read(165+yacheyka);
+//keelog_codePAK1zapisSBTR[6] = EEPROM.read(166+yacheyka);
+//keelog_codePAK1zapisSBTR[7] = EEPROM.read(167+yacheyka);
+//keelog_codePAK1zapisSBTR[8] = EEPROM.read(168+yacheyka);
+
+
+
+
+if(digitalRead(D12)==LOW){
+
+keelog_sendzibaruy(keelog_codePAK1zapisSBTR);
+delay(3500);
+keelog_sendzibaruy2(keelog_codePAK2zapisSBTR);
+
+
+
+
+  for(int i = 0; i<9; i++){
+     
+
+   
+     display.print(keelog_codePAK1zapisSBTR[i],HEX);
+      delay(3);
+     
+      display.display();
+     
+     
+   
+     
+  }
+
+display.println();
+display.println();
+    for(int i = 0; i<9; i++){
+     
+
+   
+     display.print(keelog_codePAK2zapisSBTR[i],HEX);
+      delay(3);
+     
+      display.display();
+     
+     
+   
+     
+  }
+
+delay(3000);
+ 
+}
+
+
+
+
+if(digitalRead(D14)==LOW){
+
+starline_sendPAK2zub1(starline_codePAK1zapisSBTR);
+delay(3500);
+starline_sendPAK2zub2(starline_codePAK2zapisSBTR);
+
+
+
+
+ for(int i = 0; i<9; i++){
+     
+
+   
+     display.print(starline_codePAK1zapisSBTR[i],HEX);
+      delay(3);
+     
+      display.display();
+     
+     
+   
+     
+  }
+display.println();
+display.println();
+  for(int i = 0; i<9; i++){
+     
+
+   
+     display.print(starline_codePAK2zapisSBTR[i],HEX);
+      delay(3);
+     
+      display.display();
+     
+     
+   
+     
+  }
+
+delay(3000);
+ 
+}
+
+
+if(digitalRead(D13)==LOW){
+ 
+ 
+ 
+ yacheyka=yacheyka+100;
+ delay(300);
+ 
+ if(yacheyka>=1000){
+ 
+ yacheyka = 0;
+ } }
+
+ 
+}
+
+
+///////////////////////////////////////////END PAGE 10///////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////PAGE 11///////////////////////////////////////////////////////////////////////////
+
+if(page==11){
+
+
+     display.setTextSize(1);
+  display.clearDisplay();
+  display.setTextColor( WHITE);
+   display.drawFastHLine(0,10,83,BLACK);
+   display.setCursor(20, 0);
+   display.print("BYTE");
+   display.println();
+ 
+
+ 
+   display.display();
+
+shirt = 0;
+bitnumber = 0;
+
+  if (page==11&&menuitem==1)
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else
+    {
+      display.setTextColor(BLACK, WHITE);
+    }
+    display.print(">VVOD 1 BIT");
+    display.setCursor(0, 25);
+
+
+
+  ///4 punkt 
+
+
+     if (page==11&&menuitem==2)
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else
+    {
+      display.setTextColor(BLACK, WHITE);
+    }
+    display.print(">SEND");
+    display.setCursor(0, 35);
+
+   /////////////////
+
+
+   
+    if (page==11&&menuitem==3)
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else
+    {
+      display.setTextColor(BLACK, WHITE);
+    } 
+    display.setCursor(0, 36); 
+    display.print(">VVOD 2 BIT");
+   
+
+ 
+    display.display();
+
+   
+ 
+
+ 
+}
+
+
+/////////////////////////////////////////////////////END PAGE 11///////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////PAGE 12///////////////////////////////////////////////////////////////////////////
+
+if(page==12){
+
+
+     display.setTextSize(1);
+  display.clearDisplay();
+  display.setTextColor( WHITE);
+   display.setCursor(0, 0);
+   display.print("BYTE");
+   display.println();       
+   display.print(bitnumber);
+    display.print("-");       
+   display.print(shirt);
+
+
+if(shirt==0){
+
+ display.print("-"); 
+  display.print("vvod po 1++");
+ 
+}
+
+if(shirt==1){
+
+ display.print("-"); 
+  display.print("vvod po 10++");
+ 
+}
+
+
+if(shirt==2){
+
+ display.print("-"); 
+  display.print("vvod po 10--");
+ 
+}
+
+if(shirt==3){
+
+ display.print("-"); 
+  display.print("vvod po 1--");
+ 
+}
+
+
+
+   
+   display.println();
+   display.display();
+ for(int i = 0; i<10; i++){     
+
+   
+     display.print(VVOD1[i],HEX);     
+     
+      display.display();       
+   
+     
+  }
+
+  if(shirt>=4){
+shirt = 0;
+   
+  }
+
+ 
+
+
+if(digitalRead(9)==LOW&&shirt==1){
+   display.println();
+
+     display.println("VVOD BIT++10");
+     display.display();
+
+
+
+ 
+
+    VVOD1[bitnumber]= VVOD1[bitnumber]+10;
+
+     display.setCursor(20, 40);
+   display.println(VVOD1[bitnumber],HEX);
+   display.display();
+ 
+}
+
+
+if(digitalRead(9)==LOW&&shirt==2){
+   display.println();
+
+     display.println("VVOD BIT--10");
+     display.display();
+
+
+
+ 
+
+    VVOD1[bitnumber]= VVOD1[bitnumber]-10;
+
+     display.setCursor(20, 40);
+   display.println(VVOD1[bitnumber],HEX);
+   display.display();
+ 
+}
+
+
+
+
+  if(digitalRead(D12)==LOW&&shirt==3){
+   display.println();
+
+     display.println("VVOD BIT--1");
+     display.display();
+
+
+
+ 
+
+    VVOD1[bitnumber]= VVOD1[bitnumber]-1;
+
+     display.setCursor(20, 40);
+   display.println(VVOD1[bitnumber],HEX);
+   display.display();
+ 
+}
+ 
+ 
+
+
+   if(digitalRead(D13)==LOW){
+
+     bitnumber++;
+
+     if(bitnumber>9){
+
+      bitnumber = 0;
+      shirt++;
+     }
+
+
+      display.setCursor(0, 30);
+   display.println(bitnumber);
+   display.display();
+     
+    }
+
+
+ 
+   if(digitalRead(D14)==LOW){
+    display.println();
+
+     display.println("VVODi BIT");
+     display.display();
+
+    if(digitalRead(D12)==LOW){
+
+    VVOD1[bitnumber]++;
+
+     display.setCursor(20, 40);
+   display.println(VVOD1[bitnumber],HEX);
+   display.display();
+
+ 
+
+
+   
+    }
+
+ 
+}
+
+///byte VVOD2[9];
+
+
+
+ 
+}
+
+
+/////////////////////////////////////////////////////END PAGE 12///////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////// PAGE 13///////////////////////////////////////////////////////////////////////////
+
+if(page==13) {
+
+
+     display.setTextSize(1);
+  display.clearDisplay();
+  display.setTextColor( WHITE);
+   display.setCursor(0, 0);
+   display.print("SEND-BYTE");
+   display.println(); 
+   
+   display.print(pagero);
+if(pagero>2){
+
+display.println("keeloq");   
+}
+
+if(pagero<2){
+
+display.println("starline");   
+}
+
+   display.display();
+
+ if(digitalRead(D13)==LOW){
+
+  pagero++;
+if(pagero>4){
+  pagero = 0;
+}
+display.println(); 
+display.println(pagero);
+display.display();
+ 
+ }
+
+
+////////////////////////////////////////////////////////////////////
+
+
+ if(digitalRead(D12)==LOW){
+
+if(pagero<1)
+{
+
+
+starline_sendVVOD1(VVOD1);
+display.println();
+
+ for(int i = 0; i<10; i++){     
+
+   
+     display.print(VVOD1[i],HEX);     
+     
+      display.display();       
+   
+     
+  }
+  delay(400);
+
+ 
+
+}
+
+
+
+ if(pagero>2){
+
+
+keelog_sendVVOD1(VVOD1);
+display.println();
+
+ for(int i = 0; i<10; i++){     
+
+ 
+     display.print(VVOD1[i],HEX);     
+     
+      display.display();       
+   
+     
+  }
+    delay(400);
+ 
+}
+
+
+///
+
+
+ }
+
+//////////////////////////////
+
+
+
+
+ if(digitalRead(D14)==LOW){
+
+if(pagero<1)
+{
+
+
+starline_sendVVOD2(VVOD2);
+
+display.println();
+ for(int i = 0; i<10; i++){     
+
+   
+     display.print(VVOD2[i],HEX);     
+     
+      display.display();       
+   
+     
+  }
+  delay(400);
+
+ 
+
+}
+
+
+
+ if(pagero>2){
+
+
+keelog_sendVVOD2(VVOD2);
+display.println();
+ for(int i = 0; i<10; i++){     
+
+   
+     display.print(VVOD2[i],HEX);     
+     
+      display.display();       
+   
+     
+  }
+    delay(400);
+ 
+}
+
+
+///
+
+
+ }
+ 
+
+ 
+}
+
+
+/////////////////////////////////////////////////////END PAGE 13///////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////PAGE 14///////////////////////////////////////////////////////////////////////////
+if(page==14){
+
+   display.setTextSize(1);
+  display.clearDisplay();
+  display.setTextColor( WHITE);
+   display.setCursor(0, 0);
+   display.print("BYTE-2");
+   display.println();       
+   display.print(bitnumber);
+     display.print("-");       
+   display.print(shirt);
+
+
+if(shirt==0){
+
+ display.print("-"); 
+  display.print("vvod po 1++");
+ 
+}
+
+if(shirt==1){
+
+ display.print("-"); 
+  display.print("vvod po 10++");
+ 
+}
+
+
+if(shirt==2){
+
+ display.print("-"); 
+  display.print("vvod po 10--");
+ 
+}
+
+if(shirt==3){
+
+ display.print("-"); 
+  display.print("vvod po 1--");
+ 
+}
+
+   
+   display.println();
+   display.display();
+ for(int i = 0; i<10; i++){     
+
+   
+     display.print(VVOD2[i],HEX);     
+     
+      display.display();       
+   
+     
+  }
+ if(shirt>=4){
+shirt = 0;
+   
+  }
+
+if(digitalRead(9)==LOW&&shirt==1){
+   display.println();
+
+     display.println("VVOD BIT++10");
+     display.display();
+
+
+
+   
+
+    VVOD2[bitnumber]=VVOD2[bitnumber]+10;
+
+     display.setCursor(20, 40);
+   display.println(VVOD2[bitnumber],HEX);
+   display.display();
+
+ 
+
+
+   
+ 
+
+
+
+
+ 
+}
+
+
+if(digitalRead(9)==LOW&&shirt==2){
+   display.println();
+
+     display.println("VVOD BIT--10");
+     display.display();
+
+
+
+   
+
+    VVOD2[bitnumber]=VVOD2[bitnumber]-10;
+
+     display.setCursor(20, 40);
+   display.println(VVOD2[bitnumber],HEX);
+   display.display();
+
+ 
+
+
+   
+ 
+
+
+
+
+ 
+}
+
+
+
+if(digitalRead(9)==LOW&&shirt==3){
+   display.println();
+
+     display.println("VVOD BIT--1");
+     display.display();
+
+
+
+   
+
+    VVOD2[bitnumber]=VVOD2[bitnumber]-1;
+
+     display.setCursor(20, 40);
+   display.println(VVOD2[bitnumber],HEX);
+   display.display();
+
+ 
+
+
+   
+ 
+
+
+
+
+ 
+}
+
+
+
+ 
+
+
+   if(digitalRead(D13)==LOW){
+
+     bitnumber++;
+     
+
+     if(bitnumber>9){
+
+      bitnumber = 0;
+      shirt++;
+     }
+
+
+      display.setCursor(0, 30);
+   display.println(bitnumber);
+   display.display();
+     
+    }
+
+
+ 
+   if(digitalRead(D14)==LOW){
+    display.println();
+
+     display.println("VVODi BIT");
+     display.display();
+
+    if(digitalRead(D12)==LOW){
+
+    VVOD2[bitnumber]++;
+
+     display.setCursor(20, 40);
+   display.println(VVOD2[bitnumber],HEX);
+   display.display();
+
+ 
+
+
+   
+    }
+
+ 
+}
+
+///byte VVOD2[9];
+
+
+
+
+ 
+}
+
+/////////////////////////////////////////////////////END PAGE 14///////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////// PAGE 15///////////////////////////////////////////////////////////////////////////
+
+if(page==15){
+
+////pakiweb = 0;
+
+
+ display.setTextSize(1);
+  display.clearDisplay();
+  display.setTextColor( WHITE);
+   display.setCursor(0, 0);
+  display.println(pakiweb);
+
+ 
+ if(pakiweb==0){
+
+ display.print("-"); 
+  display.print("sendstarline");
+ 
+}
+
+
+
+ if(pakiweb==1){
+
+ display.print("-"); 
+  display.print("sendkeyloh");
+ 
+}
+ 
+ 
+   display.display();
+ 
+
+///  EEPROM.begin(3512);
+
+//webpak1[0]=EEPROM.read(200);
+//  webpak1[1]=EEPROM.read(201);
+//  webpak1[2]=EEPROM.read(202);
+ //  webpak1[3]=EEPROM.read(203);
+////  webpak1[4]=EEPROM.read(204);
+//   webpak1[5]=EEPROM.read(205);
+//   webpak1[6]=EEPROM.read(206);
+//  webpak1[7]=EEPROM.read(207);
+//   webpak1[8]=EEPROM.read(208);
+
+
+   // EEPROM.begin(3512);
+
+ //  webpak2[0]=EEPROM.read(210);
+ // webpak2[1]=EEPROM.read(211);
+ // webpak2[2]=EEPROM.read(212);
+ //  webpak2[3]=EEPROM.read(213);
+ // webpak2[4]=EEPROM.read(214);
+ //  webpak2[5]=EEPROM.read(215);
+ //  webpak2[6]=EEPROM.read(216);
+//  webpak2[7]=EEPROM.read(217);
+//   webpak2[8]=EEPROM.read(218);
+
+
+
+
+//////////byte webpak2[9];
+///////////////byte webpak1[9];
+
+
+ 
+
+
+
+webcoderead();
+
+
+if(digitalRead(D12)==LOW&&pakiweb==0){
+
+  display.clearDisplay();
+
+  starline_sendwebpak1(webpak1);
+
+  for(int i = 0; i<9; i++){
+     
+
+   
+     display.print(webpak1[i],HEX);
+      delay(3);
+     
+      display.display();
+     
+     
+   
+     
+  }}
+
+
+
+
+
+if(digitalRead(D12)==LOW&&pakiweb==1){
+
+  display.clearDisplay();
+
+  keelog_sendwebpak1(webpak1);
+
+  for(int i = 0; i<9; i++){
+     
+
+   
+     display.print(webpak1[i],HEX);
+      delay(3);
+     
+      display.display();
+     
+     
+   
+     
+  }}
+
+
+
+ 
+
+
+if(digitalRead(D13)==LOW){
+
+pakiweb++;
+if(pakiweb>=3){
+
+
+  pakiweb = 0;
+}
+
+ 
+}
+
+ 
+
+
+
+
+
+if(digitalRead(D14)==LOW&&pakiweb==0){
+  display.clearDisplay();
+
+  starline_sendwebpak2(webpak2);
+
+  for(int i = 0; i<9; i++){
+     
+
+   
+     display.print(webpak2[i],HEX);
+      delay(3);
+     
+      display.display();
+     
+     
+   
+     
+  } 
+}
+
+
+
+
+
+
+if(digitalRead(D14)==LOW&&pakiweb==1){
+  display.clearDisplay();
+
+  keelog_sendwebpak2(webpak2);
+
+  for(int i = 0; i<9; i++){
+     
+
+   
+     display.print(webpak2[i],HEX);
+      delay(3);
+     
+      display.display();   
+     
+   
+     
+  }
+
+
+ 
+}
+/////////////////////
+}
+
+
+
+/////////////////////////////////////////////////////END PAGE 15///////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////PAGE 20////////////////////////////////////////////////////////////////////////////////
+
+
+
+ if (page==20)
+  {   
+    display.setTextSize(1);
+    display.clearDisplay();
+    display.setTextColor(BLACK, WHITE);
+    display.setCursor(15, 0);
+    display.print("BRO GRAB");
+    display.drawFastHLine(0,10,83,BLACK);
+    display.setCursor(0, 15);
+   
+    if (menuitem==1)
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else
+    {
+      display.setTextColor(BLACK, WHITE);
+    }
+    display.print(">WEB GRABBER");
+    display.setCursor(0, 25);
+
+
+
+  ///4 punkt 
+
+
+     if (menuitem==4)
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else
+    {
+      display.setTextColor(BLACK, WHITE);
+    }
+    display.print(">PAMEHA");
+    display.setCursor(0, 35);
+
+   /////////////////
+
+
+   
+    if (menuitem==2)
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+    else
+    {
+      display.setTextColor(BLACK, WHITE);
+    } 
+    display.setCursor(0, 36); 
+    display.print(">CAME");
+   
+    //if (backlight)
+   // {
+   //   display.print("ON");
+  // }
+  //  else
+  //  {
+   //   display.print("OFF");
+ //   }
+    display.display();
+
+   
+   
+    if (menuitem==3)
+    {
+      display.setTextColor(WHITE, BLACK);
+    }
+   else
+    {
+      display.setTextColor(BLACK, WHITE);
+    } 
+   display.setCursor(15, 50);
+   display.print("COCO-GRAB");
+   display.display();
+  }
+
+
+
+
+///////////////////////////////////////////////////////////////////////end 20////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////21page/////////////////////////////////////////////////////////
+
+if(page==21){
+
+
+came_brut();
+
+
+ 
+}
+
+
+
+
+if(page==22){
+
+
+PAMEHA();
+
+
+ 
+}
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////end 21////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+if (page==4)
+  {
+ 
+startgrabber(); //zapusk skanera
+
+
+if(smena<4){
+//Serial.println(smena);
+if(digitalRead(D14)==LOW){
+
+posilstarline2();
+ 
+}
+
+
+
+if(digitalRead(D12)==LOW){
+
+posilstarline1();
+ 
+}
+
+//ZAPIS STARA
+
+
+if(digitalRead(D14)==LOW&&digitalRead(D12)==LOW){
+
+
+
+ prefs.begin("starz", false);
+ 
+
+  prefs.begin("kee", false);
+ prefs.begin("sta", false);
+
+
+///EEPROM.begin(3512);
+
+// EEPROM.write(70, EEPROM.read(20));
+
+prefs.putUChar("starz0",  prefs.getUChar("sta0", 0));
+///    EEPROM.write(71,EEPROM.read(21));
+prefs.putUChar("starz1",  prefs.getUChar("sta1", 0));
+ ///    EEPROM.write(72,EEPROM.read(22));
+ prefs.putUChar("starz2",  prefs.getUChar("sta2", 0));
+ //    EEPROM.write(73,EEPROM.read(23));
+ prefs.putUChar("starz3",  prefs.getUChar("sta3", 0));
+ ///    EEPROM.write(74,EEPROM.read(24));
+ prefs.putUChar("starz4",  prefs.getUChar("sta4", 0));
+ ///   EEPROM.write(75,EEPROM.read(25));
+ prefs.putUChar("starz5",  prefs.getUChar("sta5", 0));
+///    EEPROM.write(76,EEPROM.read(26));
+prefs.putUChar("starz6",  prefs.getUChar("sta6", 0));
+prefs.putUChar("starz7",  prefs.getUChar("sta7", 0));
+ ///    EEPROM.write(77,EEPROM.read(27));
+ prefs.putUChar("starz8",  prefs.getUChar("sta8", 0));
+ //   EEPROM.write(78,EEPROM.read(28));
+//    EEPROM.commit();
+ // EEPROM.end();
+    delay(100);
+
+ //   EEPROM.begin(3512);   
+// EEPROM.write(80, EEPROM.read(30));
+prefs.putUChar("starz10",  prefs.getUChar("sta10", 0));
+ //   EEPROM.write(81,EEPROM.read(31));
+ prefs.putUChar("starz11",  prefs.getUChar("sta11", 0));
+ ///    EEPROM.write(82,EEPROM.read(32));
+ prefs.putUChar("starz12",  prefs.getUChar("sta12", 0));
+//     EEPROM.write(83,EEPROM.read(33));
+prefs.putUChar("starz13",  prefs.getUChar("sta13", 0));
+///     EEPROM.write(84,EEPROM.read(34));
+prefs.putUChar("starz14",  prefs.getUChar("sta14", 0));
+ ///   EEPROM.write(85,EEPROM.read(35));
+ prefs.putUChar("starz15",  prefs.getUChar("sta15", 0));
+ ///   EEPROM.write(86,EEPROM.read(36));
+ prefs.putUChar("starz16",  prefs.getUChar("sta16", 0));
+ ///   EEPROM.write(87,EEPROM.read(37));
+ prefs.putUChar("starz17",  prefs.getUChar("sta17", 0));
+ //   EEPROM.write(88,EEPROM.read(38));
+ prefs.putUChar("starz18",  prefs.getUChar("sta18", 0));
+
+ 
+ // EEPROM.commit();
+ // EEPROM.end();
+
+//sohr keelock
+
+
+
+
+
+
+//vibros na displey
+display.clearDisplay();
+display.setCursor(0, 0);
+ display.setTextSize(1);   
+    display.println("sohranenno");
+///    EEPROM.begin(3512);
+ display.print( prefs.getUChar("starz0", 0),HEX);
+   
+  //  display.print(EEPROM.read(71),HEX);
+   display.print( prefs.getUChar("starz1", 0),HEX);
+ //   display.print(EEPROM.read(72),HEX);
+  display.print( prefs.getUChar("starz2", 0),HEX);
+  //  display.print(EEPROM.read(73),HEX);
+   display.print( prefs.getUChar("starz3", 0),HEX);
+ //   display.print(EEPROM.read(74),HEX);
+  display.print( prefs.getUChar("starz4", 0),HEX);
+  //  display.print(EEPROM.read(75),HEX);
+   display.print( prefs.getUChar("starz5", 0),HEX);
+  ///  display.print(EEPROM.read(76),HEX);
+   display.print( prefs.getUChar("starz6", 0),HEX);
+  //  display.print(EEPROM.read(77),HEX);
+   display.print( prefs.getUChar("starz7", 0),HEX);
+  //  display.print(EEPROM.read(78),HEX);
+   display.print( prefs.getUChar("starz8", 0),HEX);
+
+   
+    display.println();
+
+    display.println("pak2");
+      display.print( prefs.getUChar("starz10", 0),HEX);
+ //     display.print(EEPROM.read(80),HEX);
+  display.print( prefs.getUChar("starz11", 0),HEX);
+  //   display.print(EEPROM.read(81),HEX);
+   display.print( prefs.getUChar("starz12", 0),HEX);
+ //   display.print(EEPROM.read(82),HEX);
+  display.print( prefs.getUChar("starz13", 0),HEX);
+  //  display.print(EEPROM.read(83),HEX);
+   display.print( prefs.getUChar("starz14", 0),HEX);
+ //   display.print(EEPROM.read(84),HEX);
+  display.print( prefs.getUChar("starz15", 0),HEX);
+ //   display.print(EEPROM.read(85),HEX);
+  display.print( prefs.getUChar("starz16", 0),HEX);
+ //   display.print(EEPROM.read(86),HEX);
+  display.print( prefs.getUChar("starz17", 0),HEX);
+  //  display.print(EEPROM.read(87),HEX);
+   display.print( prefs.getUChar("starz18", 0),HEX);
+ //   display.print(EEPROM.read(88),HEX);
+ 
+ 
+   
+    delay(10);
+   display.display();
+
+ 
+ delay(1000);
+   
+
+
+   
+
+ 
+}
+
+
+
+
+}
+
+
+
+///smena1
+
+if(smena>5){
+//Serial.println(smena);
+if(digitalRead(D14)==LOW){
+
+posilkeeloq1();
+ 
+}
+
+
+
+if(digitalRead(D12)==LOW){
+
+posilkeeloq2();
+ 
+}
+
+//ZAPIS
+
+if(digitalRead(D14)==LOW&&digitalRead(D12)==LOW){
+
+
+
+
+ prefs.begin("starz", false);
+ 
+
+  prefs.begin("kee", false);
+ prefs.begin("sta", false);
+ 
+ prefs.begin("keez", false);
+
+//EEPROM.begin(3512);
+
+
+// EEPROM.write(50, EEPROM.read(0));
+prefs.putUChar("keez0",  prefs.getUChar("kee0", 0));
+ //   EEPROM.write(51,EEPROM.read(1));
+ prefs.putUChar("keez1",  prefs.getUChar("kee1", 0));
+ //    EEPROM.write(52,EEPROM.read(2));
+ prefs.putUChar("keez2",  prefs.getUChar("kee2", 0));
+ //    EEPROM.write(53,EEPROM.read(3));
+ prefs.putUChar("keez3",  prefs.getUChar("kee3", 0));
+  //   EEPROM.write(54,EEPROM.read(4));
+  prefs.putUChar("keez4",  prefs.getUChar("kee4", 0));
+  //  EEPROM.write(55,EEPROM.read(5));
+  prefs.putUChar("keez5",  prefs.getUChar("kee5", 0));
+ ///   EEPROM.write(56,EEPROM.read(6));
+ prefs.putUChar("keez6",  prefs.getUChar("kee6", 0));
+ ///    EEPROM.write(57,EEPROM.read(7));
+ prefs.putUChar("keez7",  prefs.getUChar("kee7", 0));
+ //   EEPROM.write(58,EEPROM.read(8));
+ prefs.putUChar("keez8",  prefs.getUChar("kee8", 0));
+
+  //  EEPROM.commit();
+ // EEPROM.end();
+prefs.begin("kee", false);
+
+
+
+ 
+    delay(100);
+
+ prefs.begin("starz", false);
+ 
+
+  prefs.begin("kee", false);
+ prefs.begin("sta", false);
+ 
+ prefs.begin("keez", false);
+ //   EEPROM.begin(3512);
+// EEPROM.write(60, EEPROM.read(10));
+prefs.putUChar("keez10",  prefs.getUChar("kee10", 0));
+ //   EEPROM.write(61,EEPROM.read(11));
+ prefs.putUChar("keez11",  prefs.getUChar("kee11", 0));
+  //   EEPROM.write(62,EEPROM.read(12));
+  prefs.putUChar("keez12",  prefs.getUChar("kee12", 0));
+  ///   EEPROM.write(63,EEPROM.read(13));
+  prefs.putUChar("keez13",  prefs.getUChar("kee13", 0));
+  //   EEPROM.write(64,EEPROM.read(14));
+  prefs.putUChar("keez14",  prefs.getUChar("kee14", 0));
+   /// EEPROM.write(65,EEPROM.read(15));
+   prefs.putUChar("keez15",  prefs.getUChar("kee15", 0));
+   /// EEPROM.write(66,EEPROM.read(16));
+   prefs.putUChar("keez16",  prefs.getUChar("kee16", 0));
+  ///  EEPROM.write(67,EEPROM.read(17));
+  prefs.putUChar("keez17",  prefs.getUChar("kee17", 0));
+  //  EEPROM.write(68,EEPROM.read(18));
+  prefs.putUChar("keez18",  prefs.getUChar("kee18", 0));
+
+ 
+ // EEPROM.commit();
+ // EEPROM.end();
+
+//sohr keelock
+
+
+
+
+
+
+//vibros na displey
+display.clearDisplay();
+display.setCursor(0, 0);
+ display.setTextSize(1);   
+    display.println("sohranenno");
+//    EEPROM.begin(3512);
+//    display.print(EEPROM.read(50),HEX);
+
+ prefs.begin("starz", false);
+ 
+
+  prefs.begin("kee", false);
+ prefs.begin("sta", false);
+ 
+ prefs.begin("keez", false);
+
+ display.print(prefs.getUChar("keez0", 0),HEX);/////////isprav
+ //   display.print(EEPROM.read(52),HEX);
+  display.print(prefs.getUChar("keez1", 0),HEX);
+//    display.print(EEPROM.read(53),HEX);
+ display.print(prefs.getUChar("keez2", 0),HEX);
+//    display.print(EEPROM.read(54),HEX);
+ display.print(prefs.getUChar("keez3", 0),HEX);
+//    display.print(EEPROM.read(55),HEX);
+ display.print(prefs.getUChar("keez4", 0),HEX);
+ //   display.print(EEPROM.read(56),HEX);
+  display.print(prefs.getUChar("keez5", 0),HEX);
+ //   display.print(EEPROM.read(57),HEX);
+  display.print(prefs.getUChar("keez6", 0),HEX);
+ //   display.print(EEPROM.read(58),HEX);
+  display.print(prefs.getUChar("keez7", 0),HEX);
+   display.print(prefs.getUChar("keez8", 0),HEX);
+
+   
+    display.println();
+
+    display.println("pak2");
+  //    display.print(EEPROM.read(60),HEX);
+   display.print(prefs.getUChar("keez10", 0),HEX);
+  //   display.print(EEPROM.read(61),HEX);
+   display.print(prefs.getUChar("keez11", 0),HEX);
+  //  display.print(EEPROM.read(62),HEX);
+   display.print(prefs.getUChar("keez12", 0),HEX);
+  //  display.print(EEPROM.read(63),HEX);
+   display.print(prefs.getUChar("keez13", 0),HEX);
+  //  display.print(EEPROM.read(64),HEX);
+   display.print(prefs.getUChar("keez14", 0),HEX);
+  //  display.print(EEPROM.read(65),HEX);
+   display.print(prefs.getUChar("keez15", 0),HEX);
+  //  display.print(EEPROM.read(66),HEX);
+   display.print(prefs.getUChar("keez16", 0),HEX);
+  //  display.print(EEPROM.read(67),HEX);
+   display.print(prefs.getUChar("keez17", 0),HEX);
+  //  display.print(EEPROM.read(68),HEX);
+   display.print(prefs.getUChar("keez18", 0),HEX);
+ 
+         
+    delay(10);
+   display.display();
+
+   
+
+   
+ delay(1000);
+
+   
+
+ 
+}
+
+}
+
+
+//pered scob
+  }
+
+
+
+
+ 
+  }
+
+  void resetDefaults()
+  {
+ //   contrast = 50;
+  //  setContrast();
+   // backlight = true;
+   // turnBacklightOn();
+  }
+
+  void setContrast()
+  {
+    //display.setContrast();
+    display.display();
+  }
+
+  void turnBacklightOn()
+  {
+   
+  //  digitalWrite(9,LOW);
+  }
+
+    void turnBacklightOff()
+  {
+  //  digitalWrite(9,HIGH);
+  }
+
+
+void chistik(){          //chistic pidor sizpshniy takzhe izvesten pod koziem imenev sasha moriyak
+display.clearDisplay();
+
+
+  display.setTextSize(2);
+   
+    display.setTextColor( WHITE);
+    display.setCursor(0, 0);
+    display.print("SCAN433mhz");
+ display.display();
+
+
+}
+
+void chistikmemory(){          //chistic pidor sizpshniy takzhe izvesten pod koziem imenev sasha moriyak
+display.clearDisplay();
+
+
+  display.setTextSize(2);
+   
+    display.setTextColor( WHITE);
+    display.setCursor(0, 0);
+    display.print("MEMORY");
+ display.display();
+
+
+}
+
+
+void chistikmemorystar(){          //chistic pidor sizpshniy takzhe izvesten pod koziem imenev sasha moriyak
+display.clearDisplay();
+
+
+  display.setTextSize(2);
+   
+    display.setTextColor( WHITE);
+    display.setCursor(0, 0);
+    display.println("MEMORY");
+    display.println("STARLINE");
+ display.display();
+
+
+}
+
+void chistikmemorykeeloq(){          //chistic pidor sizpshniy takzhe izvesten pod koziem imenev sasha moriyak
+display.clearDisplay();
+
+
+  display.setTextSize(2);
+   
+    display.setTextColor( WHITE);
+    display.setCursor(0, 0);
+    display.println("MEMORY");
+    display.println("KEELOQ");
+ display.display();
+
+
+}
+
+
+
+
+
+
+
+
+void longhand(){          //chistic pidor sizpshniy takzhe izvesten pod koziem imenev sasha moriyak
+display.clearDisplay();
+
+
+  display.setTextSize(2);
+   
+    display.setTextColor( WHITE);
+    display.setCursor(15, 0);
+    display.print("LONG HAND");
+ display.display();
+
+
+
+
+
+
+}
+//}
+
+
+
+
+
+void posilkeeloq1(){
+
+
+ prefs.begin("starz", false);
+ 
+
+  prefs.begin("kee", false);
+ prefs.begin("sta", false);
+ 
+ prefs.begin("keez", false);
+
+//EEPROM.begin(3512);
+// keelog_codePAK1[0]=EEPROM.read(0);
+keelog_codePAK1[0]=prefs.getUChar("kee0", 0);
+
+ // keelog_codePAK1[1]=EEPROM.read(1);
+ keelog_codePAK1[1]=prefs.getUChar("kee1", 0);
+ //  keelog_codePAK1[2]=EEPROM.read(2);
+ keelog_codePAK1[2]=prefs.getUChar("kee2", 0);
+ //  keelog_codePAK1[3]=EEPROM.read(3);
+ keelog_codePAK1[3]=prefs.getUChar("kee3", 0);
+ //  keelog_codePAK1[4]=EEPROM.read(4);
+ keelog_codePAK1[4]=prefs.getUChar("kee4", 0);
+//   keelog_codePAK1[5]=EEPROM.read(5);
+keelog_codePAK1[5]=prefs.getUChar("kee5", 0);
+//   keelog_codePAK1[6]=EEPROM.read(6);
+keelog_codePAK1[6]=prefs.getUChar("kee6", 0);
+//   keelog_codePAK1[7]=EEPROM.read(7);
+keelog_codePAK1[7]=prefs.getUChar("kee7", 0);
+//   keelog_codePAK1[8]=EEPROM.read(8);
+keelog_codePAK1[8]=prefs.getUChar("kee8", 0);
+
+
+    keelog_send(keelog_codePAK1);
+ 
+  digitalWrite(TX, HIGH);
+  delay(100);
+  digitalWrite(TX, LOW);
+
+
+
+//vibros na displey
+display.clearDisplay();
+display.setCursor(4, 0);
+ display.setTextSize(1);   
+    display.print(keelog_codePAK1[0],HEX);
+     display.print(keelog_codePAK1[1],HEX);
+     display.print(keelog_codePAK1[2],HEX);
+    display.print(keelog_codePAK1[3],HEX);
+     display.print(keelog_codePAK1[4],HEX);
+       display.print(keelog_codePAK1[5],HEX);
+        display.print(keelog_codePAK1[6],HEX);
+         display.print(keelog_codePAK1[7],HEX);
+         display.print(keelog_codePAK1[8],HEX);
+         
+    delay(10);
+   display.display();
+ 
+   
+  keelog_state = 0;
+/// for(int i = 0; i<9; i++){
+///    keelog_code[i]=0;}
+
+//Serial.println("srabotalo-keeloq");
+   
+}
+
+
+void posilkeeloq2(){
+//EEPROM.begin(3512);
+
+ prefs.begin("starz", false);
+ 
+
+  prefs.begin("kee", false);
+ prefs.begin("sta", false);
+ 
+ prefs.begin("keez", false);
+
+  // keelog_codePAK2[0]=EEPROM.read(10);
+  keelog_codePAK2[0]=prefs.getUChar("kee10", 0);
+//  keelog_codePAK2[1]=EEPROM.read(11);
+  keelog_codePAK2[1]=prefs.getUChar("kee11", 0);
+//   keelog_codePAK2[2]=EEPROM.read(12);
+  keelog_codePAK2[2]=prefs.getUChar("kee12", 0);
+//   keelog_codePAK2[3]=EEPROM.read(13);
+  keelog_codePAK2[3]=prefs.getUChar("kee13", 0);
+///   keelog_codePAK2[4]=EEPROM.read(14);
+  keelog_codePAK2[4]=prefs.getUChar("kee14", 0);
+ //  keelog_codePAK2[5]=EEPROM.read(15);
+   keelog_codePAK2[5]=prefs.getUChar("kee15", 0);
+ //  keelog_codePAK2[6]=EEPROM.read(16);
+   keelog_codePAK2[6]=prefs.getUChar("kee16", 0);
+ //  keelog_codePAK2[7]=EEPROM.read(17);
+   keelog_codePAK2[7]=prefs.getUChar("kee17", 0);
+  // keelog_codePAK2[8]=EEPROM.read(18);
+
+
+
+   keelog_sendPAK2(keelog_codePAK2);
+ digitalWrite(TX, HIGH);
+  delay(100);
+  digitalWrite(TX, LOW);
+
+
+
+//vibros na displey
+display.clearDisplay();
+display.setCursor(4, 0);
+ display.setTextSize(1);   
+    display.print(keelog_codePAK2[0],HEX);
+     display.print(keelog_codePAK2[1],HEX);
+     display.print(keelog_codePAK2[2],HEX);
+    display.print(keelog_codePAK2[3],HEX);
+     display.print(keelog_codePAK2[4],HEX);
+       display.print(keelog_codePAK2[5],HEX);
+        display.print(keelog_codePAK2[6],HEX);
+         display.print(keelog_codePAK2[7],HEX);
+         display.print(keelog_codePAK2[8],HEX);
+         
+    delay(10);
+   display.display();
+
+ 
+   
+  keelog_state = 0;
+/// for(int i = 0; i<9; i++){
+///    keelog_codePAK2[i]=0;}
+}
+
+
+
+void posilstarline1(){
+
+
+ 
+
+ prefs.begin("starz", false);
+ 
+
+  prefs.begin("kee", false);
+ prefs.begin("sta", false);
+ 
+ prefs.begin("keez", false);
+//EEPROM.begin(3512);
+ //  starline_codePAK1[0]=EEPROM.read(20);
+ starline_codePAK1[0]=  prefs.getUChar("sta0", 0);
+ // starline_codePAK1[1]=EEPROM.read(21);
+  starline_codePAK1[1]=  prefs.getUChar("sta1", 0);
+ //  starline_codePAK1[2]=EEPROM.read(22);
+  starline_codePAK1[2]=  prefs.getUChar("sta2", 0);
+ //  starline_codePAK1[3]=EEPROM.read(23);
+  starline_codePAK1[3]=  prefs.getUChar("sta3", 0);
+ //  starline_codePAK1[4]=EEPROM.read(24);
+  starline_codePAK1[4]=  prefs.getUChar("sta4", 0);
+ //  starline_codePAK1[5]=EEPROM.read(25);
+  starline_codePAK1[5]=  prefs.getUChar("sta5", 0);
+ //  starline_codePAK1[6]=EEPROM.read(26);
+  starline_codePAK1[6]=  prefs.getUChar("sta6", 0);
+  // starline_codePAK1[7]=EEPROM.read(27);
+   starline_codePAK1[7]=  prefs.getUChar("sta7", 0);
+  // starline_codePAK1[8]=EEPROM.read(28);
+   starline_codePAK1[8]=  prefs.getUChar("sta8", 0);
+
+ starline_send(starline_codePAK1);
+ 
+  digitalWrite(TX, HIGH);
+  delay(100);
+  digitalWrite(TX, LOW);
+
+
+
+  //vibros na displey
+  display.clearDisplay();
+display.setCursor(4, 0);
+ display.setTextSize(1);   
+    display.print(starline_codePAK1[0],HEX);
+     display.print(starline_codePAK1[1],HEX);
+     display.print(starline_codePAK1[2],HEX);
+    display.print(starline_codePAK1[3],HEX);
+     display.print(starline_codePAK1[4],HEX);
+       display.print(starline_codePAK1[5],HEX);
+        display.print(starline_codePAK1[6],HEX);
+         display.print(starline_codePAK1[7],HEX);
+         display.print(starline_codePAK1[8],HEX);
+         
+    delay(10);
+   display.display();
+ 
+  starline_state = 0;
+// for(int i = 0; i<9; i++){
+ //   starline_code[i]=0;
+//  }
+ 
+///  Serial.println("srabotalo");
+  }
+
+
+  void posilstarline2(){
+   
+ prefs.begin("starz", false);
+ 
+
+  prefs.begin("kee", false);
+ prefs.begin("sta", false);
+ 
+ prefs.begin("keez", false);
+
+//    EEPROM.begin(3512);
+ //  starline_codePAK2[0]=EEPROM.read(30);
+ starline_codePAK2[0]= prefs.getUChar("sta10", 0);
+//  starline_codePAK2[1]=EEPROM.read(31);
+ starline_codePAK2[1]= prefs.getUChar("sta11", 0);
+//   starline_codePAK2[2]=EEPROM.read(32);
+ starline_codePAK2[2]= prefs.getUChar("sta12", 0);
+//   starline_codePAK2[3]=EEPROM.read(33);
+ starline_codePAK2[3]= prefs.getUChar("sta13", 0);
+//   starline_codePAK2[4]=EEPROM.read(34);
+ starline_codePAK2[4]= prefs.getUChar("sta14", 0);
+ //  starline_codePAK2[5]=EEPROM.read(35);
+  starline_codePAK2[5]= prefs.getUChar("sta15", 0);
+ //  starline_codePAK2[6]=EEPROM.read(36);
+  starline_codePAK2[6]= prefs.getUChar("sta16", 0);
+ //  starline_codePAK2[7]=EEPROM.read(37);
+  starline_codePAK2[7]= prefs.getUChar("sta17", 0);
+ //  starline_codePAK2[8]=EEPROM.read(38);
+  starline_codePAK2[8]= prefs.getUChar("sta18", 0);
+
+
+ starline_sendPAK2(starline_codePAK2);
+
+
+
+ 
+ 
+  digitalWrite(TX, HIGH);
+  delay(100);
+  digitalWrite(TX, LOW);
+
+//vibros na displey
+display.clearDisplay();
+display.setCursor(4, 0);
+ display.setTextSize(1);   
+    display.print(starline_codePAK2[0],HEX);
+     display.print(starline_codePAK2[1],HEX);
+     display.print(starline_codePAK2[2],HEX);
+    display.print(starline_codePAK2[3],HEX);
+     display.print(starline_codePAK2[4],HEX);
+       display.print(starline_codePAK2[5],HEX);
+        display.print(starline_codePAK2[6],HEX);
+         display.print(starline_codePAK2[7],HEX);
+         display.print(starline_codePAK2[8],HEX);
+         
+    delay(10);
+   display.display();
+
+ 
+   
+  starline_state = 0;
+// for(int i = 0; i<9; i++){
+//    starline_code[i]=0;
+ // }
+ 
+ 
+  }
+
+
+
+
+
+
+
+
+void posilkeeloq1zapis(){
+prefs.begin("keez", false);
+ 
+////////////////////schet paketov
+k = 0;
+kk = 0;
+
+
+//EEPROM.begin(3512);
+
+ prefs.begin("starz", false);
+ 
+
+  prefs.begin("kee", false);
+ prefs.begin("sta", false);
+ 
+ prefs.begin("keez", false);
+
+ //keelog_codePAK1zapis[0]=EEPROM.read(50);
+     keelog_codePAK1zapis[0]=prefs.getUChar("keez0", 0);
+ // keelog_codePAK1zapis[1]=EEPROM.read(51);
+ keelog_codePAK1zapis[1]=prefs.getUChar("keez1", 0);
+ //  keelog_codePAK1zapis[2]=EEPROM.read(52);
+ keelog_codePAK1zapis[2]=prefs.getUChar("keez2", 0);
+ //  keelog_codePAK1zapis[3]=EEPROM.read(53);
+ keelog_codePAK1zapis[3]=prefs.getUChar("keez3", 0);
+ //  keelog_codePAK1zapis[4]=EEPROM.read(54);
+ keelog_codePAK1zapis[4]=prefs.getUChar("keez4", 0);
+ //  keelog_codePAK1zapis[5]=EEPROM.read(55);
+ keelog_codePAK1zapis[5]=prefs.getUChar("keez5", 0);
+ //  keelog_codePAK1zapis[6]=EEPROM.read(56);
+ keelog_codePAK1zapis[6]=prefs.getUChar("keez6", 0);
+ //  keelog_codePAK1zapis[7]=EEPROM.read(57);
+ keelog_codePAK1zapis[7]=prefs.getUChar("keez7", 0);
+ //  keelog_codePAK1zapis[8]=EEPROM.read(58);
+ keelog_codePAK1zapis[8]=prefs.getUChar("keez8", 0);
+
+
+    keelog_send(keelog_codePAK1zapis);
+ 
+  digitalWrite(TX, HIGH);
+  delay(100);
+  digitalWrite(TX, LOW);
+
+
+
+//vibros na displey
+display.clearDisplay();
+display.setCursor(4, 0);
+ display.setTextSize(1);   
+    display.print(keelog_codePAK1zapis[0],HEX);
+     display.print(keelog_codePAK1zapis[1],HEX);
+     display.print(keelog_codePAK1zapis[2],HEX);
+    display.print(keelog_codePAK1zapis[3],HEX);
+     display.print(keelog_codePAK1zapis[4],HEX);
+       display.print(keelog_codePAK1zapis[5],HEX);
+        display.print(keelog_codePAK1zapis[6],HEX);
+         display.print(keelog_codePAK1zapis[7],HEX);
+         display.print(keelog_codePAK1zapis[8],HEX);
+         
+    delay(10);
+   display.display();
+ 
+   
+  keelog_state = 0;
+// for(int i = 0; i<9; i++){
+//    keelog_code[i]=0;}
+
+//Serial.println("srabotalo-keeloq");
+   
+}
+
+
+void posilkeeloq2zapis(){
+ prefs.begin("keez", false);
+////////////////////schet paketov
+k = 0;
+kk = 0;
+
+
+//EEPROM.begin(3512);
+
+ prefs.begin("starz", false);
+ 
+
+  prefs.begin("kee", false);
+ prefs.begin("sta", false);
+ 
+ prefs.begin("keez", false);
+
+ //keelog_codePAK2zapis[0]=EEPROM.read(60);
+
+ keelog_codePAK2zapis[0]=prefs.getUChar("keez10", 0);
+ // keelog_codePAK2zapis[1]=EEPROM.read(61);
+  keelog_codePAK2zapis[1]=prefs.getUChar("keez11", 0);
+ //  keelog_codePAK2zapis[2]=EEPROM.read(62);
+  keelog_codePAK2zapis[2]=prefs.getUChar("keez12", 0);
+ //  keelog_codePAK2zapis[3]=EEPROM.read(63);
+  keelog_codePAK2zapis[3]=prefs.getUChar("keez13", 0);
+ //  keelog_codePAK2zapis[4]=EEPROM.read(64);
+  keelog_codePAK2zapis[4]=prefs.getUChar("keez14", 0);
+ //  keelog_codePAK2zapis[5]=EEPROM.read(65);
+  keelog_codePAK2zapis[5]=prefs.getUChar("keez15", 0);
+ //  keelog_codePAK2zapis[6]=EEPROM.read(66);
+  keelog_codePAK2zapis[6]=prefs.getUChar("keez16", 0);
+ //  keelog_codePAK2zapis[7]=EEPROM.read(67);
+  keelog_codePAK2zapis[7]=prefs.getUChar("keez17", 0);
+  // keelog_codePAK2zapis[8]=EEPROM.read(68);
+   keelog_codePAK2zapis[8]=prefs.getUChar("keez18", 0);
+
+
+    keelog_send(keelog_codePAK2zapis);
+ 
+  digitalWrite(TX, HIGH);
+  delay(100);
+  digitalWrite(TX, LOW);
+
+
+
+//vibros na displey
+display.clearDisplay();
+display.setCursor(4, 0);
+ display.setTextSize(1);   
+    display.print(keelog_codePAK2zapis[0],HEX);
+     display.print(keelog_codePAK2zapis[1],HEX);
+     display.print(keelog_codePAK2zapis[2],HEX);
+    display.print(keelog_codePAK2zapis[3],HEX);
+     display.print(keelog_codePAK2zapis[4],HEX);
+       display.print(keelog_codePAK2zapis[5],HEX);
+        display.print(keelog_codePAK2zapis[6],HEX);
+         display.print(keelog_codePAK2zapis[7],HEX);
+         display.print(keelog_codePAK2zapis[8],HEX);
+         
+    delay(10);
+   display.display();
+ 
+   
+  keelog_state = 0;
+// for(int i = 0; i<9; i++){
+//    keelog_code[i]=0;}
+
+Serial.println("srabotalo-keeloq");
+   
+}
+
+
+
+
+
+ void posilstarline1zapis(){
+
+
+////////////////////schet paketov
+k = 0;
+kk = 0;
+ 
+//EEPROM.begin(3512);
+
+ prefs.begin("starz", false);
+ 
+
+  prefs.begin("kee", false);
+ prefs.begin("sta", false);
+ 
+ prefs.begin("keez", false);
+   
+  // starline_codePAK1zapis[0]=EEPROM.read(80);
+   starline_codePAK1zapis[0]=prefs.getUChar("starz10", 0);
+ // starline_codePAK1zapis[1]=EEPROM.read(81);
+  starline_codePAK1zapis[1]=prefs.getUChar("starz11", 0);
+ //  starline_codePAK1zapis[2]=EEPROM.read(82);
+  starline_codePAK1zapis[2]=prefs.getUChar("starz12", 0);
+//   starline_codePAK1zapis[3]=EEPROM.read(83);
+starline_codePAK1zapis[3]=prefs.getUChar("starz13", 0);
+//   starline_codePAK1zapis[4]=EEPROM.read(84);
+starline_codePAK1zapis[4]=prefs.getUChar("starz14", 0);
+//   starline_codePAK1zapis[5]=EEPROM.read(85);
+starline_codePAK1zapis[5]=prefs.getUChar("starz15", 0);
+//   starline_codePAK1zapis[6]=EEPROM.read(86);
+starline_codePAK1zapis[6]=prefs.getUChar("starz16", 0);
+//   starline_codePAK1zapis[7]=EEPROM.read(87);
+starline_codePAK1zapis[7]=prefs.getUChar("starz17", 0);
+//   starline_codePAK1zapis[8]=EEPROM.read(88);
+starline_codePAK1zapis[8]=prefs.getUChar("starz18", 0);
+
+
+ starline_sendPAK2(starline_codePAK1zapis);
+
+
+
+ 
+ 
+//  digitalWrite(TX, HIGH);
+//  delay(100);
+//  digitalWrite(TX, LOW);
+
+//vibros na displey
+display.clearDisplay();
+display.setCursor(4, 0);
+ display.setTextSize(1);   
+    display.print(starline_codePAK1zapis[0],HEX);
+     display.print(starline_codePAK1zapis[1],HEX);
+     display.print(starline_codePAK1zapis[2],HEX);
+    display.print(starline_codePAK1zapis[3],HEX);
+     display.print(starline_codePAK1zapis[4],HEX);
+       display.print(starline_codePAK1zapis[5],HEX);
+        display.print(starline_codePAK1zapis[6],HEX);
+         display.print(starline_codePAK1zapis[7],HEX);
+         display.print(starline_codePAK1zapis[8],HEX);
+         
+    delay(10);
+   display.display();
+
+ 
+   
+  starline_state = 0;
+ //for(int i = 0; i<9; i++){
+//    starline_code[i]=0;
+//  }
+  }
+ 
+
+
+
+
+ void posilstarline2zapis(){
+
+ 
+////////////////////schet paketov
+k = 0;
+kk = 0;
+
+///    EEPROM.begin(3512);
+
+
+ prefs.begin("starz", false);
+ 
+
+  prefs.begin("kee", false);
+ prefs.begin("sta", false);
+ 
+ prefs.begin("keez", false);
+
+
+ starline_codePAK2zapis[0]=prefs.getUChar("starz0", 0);
+//  starline_codePAK2zapis[1]=EEPROM.read(71);
+ starline_codePAK2zapis[1]=prefs.getUChar("starz1", 0);
+ //  starline_codePAK2zapis[2]=EEPROM.read(72);
+  starline_codePAK2zapis[2]=prefs.getUChar("starz2", 0);
+ ///  starline_codePAK2zapis[3]=EEPROM.read(73);
+  starline_codePAK2zapis[3]=prefs.getUChar("starz3", 0);
+ ///  starline_codePAK2zapis[4]=EEPROM.read(74);
+  starline_codePAK2zapis[4]=prefs.getUChar("starz4", 0);
+ //  starline_codePAK2zapis[5]=EEPROM.read(75);
+   starline_codePAK2zapis[5]=prefs.getUChar("starz5", 0);
+ ///  starline_codePAK2zapis[6]=EEPROM.read(76);
+   starline_codePAK2zapis[6]=prefs.getUChar("starz6", 0);
+ ///  starline_codePAK2zapis[7]=EEPROM.read(77);
+   starline_codePAK2zapis[7]=prefs.getUChar("starz7", 0);
+ ///  starline_codePAK2zapis[8]=EEPROM.read(78);
+   starline_codePAK2zapis[8]=prefs.getUChar("starz8", 0);
+
+
+ starline_sendPAK2(starline_codePAK2zapis);
+
+
+
+ 
+ 
+ // digitalWrite(TX, HIGH);
+ // delay(100);
+ // digitalWrite(TX, LOW);
+
+//vibros na displey
+display.clearDisplay();
+display.setCursor(4, 0);
+ display.setTextSize(1);   
+    display.print(starline_codePAK2zapis[0],HEX);
+     display.print(starline_codePAK2zapis[1],HEX);
+     display.print(starline_codePAK2zapis[2],HEX);
+    display.print(starline_codePAK2zapis[3],HEX);
+     display.print(starline_codePAK2zapis[4],HEX);
+       display.print(starline_codePAK2zapis[5],HEX);
+        display.print(starline_codePAK2zapis[6],HEX);
+         display.print(starline_codePAK2zapis[7],HEX);
+         display.print(starline_codePAK2zapis[8],HEX);
+         
+    delay(10);
+   display.display();
+
+ 
+   
+  starline_state = 0;
+// for(int i = 0; i<9; i++){
+//    starline_code[i]=0;
+//  }
+ 
+  }
+ 
+
+////////////////////////////////////WIIIIIIIIIIIFIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII///////////////////////////
+
+void sendtowebstar(){
+
+
+
+ 
+
+  WiFiClient client;
+
+///EEPROM.begin(3512);
+
+ prefs.begin("starz", false);
+ 
+
+  prefs.begin("kee", false);
+ prefs.begin("sta", false);
+ 
+ prefs.begin("keez", false);
+
+ 
+ //  starline_codePAK2zapis[0]=EEPROM.read(70);
+ starline_codePAK2zapis[0]=prefs.getUChar("starz10", 0);
+//  starline_codePAK2zapis[1]=EEPROM.read(71);
+ starline_codePAK2zapis[1]=prefs.getUChar("starz11", 0);
+//   starline_codePAK2zapis[2]=EEPROM.read(72);
+ starline_codePAK2zapis[2]=prefs.getUChar("starz12", 0);
+//   starline_codePAK2zapis[3]=EEPROM.read(73);
+ starline_codePAK2zapis[3]=prefs.getUChar("starz13", 0);
+//   starline_codePAK2zapis[4]=EEPROM.read(74);
+ starline_codePAK2zapis[4]=prefs.getUChar("starz14", 0);
+//   starline_codePAK2zapis[5]=EEPROM.read(75);
+ starline_codePAK2zapis[5]=prefs.getUChar("starz15", 0);
+ //  starline_codePAK2zapis[6]=EEPROM.read(76);
+  starline_codePAK2zapis[6]=prefs.getUChar("starz16", 0);
+ //  starline_codePAK2zapis[7]=EEPROM.read(77);
+  starline_codePAK2zapis[7]=prefs.getUChar("starz17", 0);
+ //  starline_codePAK2zapis[8]=EEPROM.read(78);
+  starline_codePAK2zapis[8]=prefs.getUChar("starz18", 0);
+
+
+
+ 
+ 
+  if (client.connect(host, 80))
+    {
+    client.print( "GET /KING-GRABBER.php?");
+    client.print("pak0=");
+    client.print( starline_codePAK2zapis[0],HEX );
+   client.print("&");
+  client.print("&");
+    client.print("pak1=");
+    client.print( starline_codePAK2zapis[1],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak2=");
+    client.print( starline_codePAK2zapis[2],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak3=");
+    client.print( starline_codePAK2zapis[3],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak4=");
+    client.print( starline_codePAK2zapis[4],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak5=");
+    client.print( starline_codePAK2zapis[5],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak6=");
+    client.print( starline_codePAK2zapis[6],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak7=");
+    client.print( starline_codePAK2zapis[7],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak8=");
+    client.print( starline_codePAK2zapis[8],HEX );   
+
+
+
+
+   
+    client.println( " HTTP/1.1");
+    client.print( "Host:" );    //////www.gansta-paradise.com
+    client.println(host);
+    client.println( "Connection: close" );
+    client.println();
+    client.println(); }
+
+
+
+delay(100);
+
+
+
+
+
+
+
+/////////////////////////////////////////////BIIIIIIIIIIIIIIIIINNNNNNNNNNNNNNNNNNNNNNNNNNN
+
+
+if (client.connect(host, 80))
+    {
+
+
+
+
+
+
+ client.print( "GET /KING-GRABBERBIN.php?");
+    client.print("pak0=");
+    client.print( starline_codePAK2zapis[0]);
+   client.print("&");
+  client.print("&");
+    client.print("pak1=");
+    client.print( starline_codePAK2zapis[1]);
+    client.print("&");
+  client.print("&");
+    client.print("pak2=");
+    client.print( starline_codePAK2zapis[2] );
+    client.print("&");
+  client.print("&");
+    client.print("pak3=");
+    client.print( starline_codePAK2zapis[3] );
+    client.print("&");
+  client.print("&");
+    client.print("pak4=");
+    client.print( starline_codePAK2zapis[4] );
+    client.print("&");
+  client.print("&");
+    client.print("pak5=");
+    client.print( starline_codePAK2zapis[5]);
+    client.print("&");
+  client.print("&");
+    client.print("pak6=");
+    client.print( starline_codePAK2zapis[6]);
+    client.print("&");
+  client.print("&");
+    client.print("pak7=");
+    client.print( starline_codePAK2zapis[7] );
+    client.print("&");
+  client.print("&");
+    client.print("pak8=");
+    client.print( starline_codePAK2zapis[8] );
+   
+    client.println( " HTTP/1.1");
+    client.print( "Host:" );    //////www.gansta-paradise.com
+    client.println(host);
+    client.println( "Connection: close" );
+    client.println();
+    client.println(); }
+
+
+
+delay(100);
+
+
+
+
+
+   
+
+
+
+///1pak
+//EEPROM.begin(3512);
+
+ prefs.begin("starz", false);
+ 
+
+  prefs.begin("kee", false);
+ prefs.begin("sta", false);
+ 
+ prefs.begin("keez", false);
+
+// starline_codePAK1zapis[0]=EEPROM.read(80);
+ starline_codePAK1zapis[0]=prefs.getUChar("starz0", 0);
+//  starline_codePAK1zapis[1]=EEPROM.read(81);
+ starline_codePAK1zapis[1]=prefs.getUChar("starz1", 0);
+ //  starline_codePAK1zapis[2]=EEPROM.read(82);
+  starline_codePAK1zapis[2]=prefs.getUChar("starz2", 0);
+ //  starline_codePAK1zapis[3]=EEPROM.read(83);
+  starline_codePAK1zapis[3]=prefs.getUChar("starz3", 0);
+ //  starline_codePAK1zapis[4]=EEPROM.read(84);
+  starline_codePAK1zapis[4]=prefs.getUChar("starz4", 0);
+ //  starline_codePAK1zapis[5]=EEPROM.read(85);
+  starline_codePAK1zapis[5]=prefs.getUChar("starz5", 0);
+ //  starline_codePAK1zapis[6]=EEPROM.read(86);
+  starline_codePAK1zapis[6]=prefs.getUChar("starz6", 0);
+ //  starline_codePAK1zapis[7]=EEPROM.read(87);
+  starline_codePAK1zapis[7]=prefs.getUChar("starz7", 0);
+  // starline_codePAK1zapis[8]=EEPROM.read(88);
+   starline_codePAK1zapis[8]=prefs.getUChar("starz8", 0);
+
+
+
+
+  if (client.connect(host, 80))
+    {
+    client.print( "GET /KING-GRABBER1.php?");
+    client.print("pak0=");
+    client.print( starline_codePAK1zapis[0],HEX );
+   client.print("&");
+  client.print("&");
+    client.print("pak1=");
+    client.print( starline_codePAK1zapis[1],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak2=");
+    client.print( starline_codePAK1zapis[2],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak3=");
+    client.print( starline_codePAK1zapis[3],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak4=");
+    client.print( starline_codePAK1zapis[4],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak5=");
+    client.print( starline_codePAK1zapis[5],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak6=");
+    client.print( starline_codePAK1zapis[6],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak7=");
+    client.print( starline_codePAK1zapis[7],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak8=");
+    client.print( starline_codePAK1zapis[8],HEX ); 
+
+
+
+
+
+
+
+   
+    client.println( " HTTP/1.1");
+    client.print( "Host:" );    //////www.gansta-paradise.com
+    client.println(host);
+    client.println( "Connection: close" );
+    client.println();
+    client.println(); }
+
+
+
+delay(100);
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////BIN/////////////////////////////////////
+
+
+
+delay(100);
+  if (client.connect(host, 80))
+    {
+ 
+      client.print( "GET /KING-GRABBER1BIN.php?");
+    client.print("pak0=");
+    client.print( starline_codePAK1zapis[0]);
+   client.print("&");
+  client.print("&");
+    client.print("pak1=");
+    client.print( starline_codePAK1zapis[1]);
+    client.print("&");
+  client.print("&");
+    client.print("pak2=");
+    client.print( starline_codePAK1zapis[2] );
+    client.print("&");
+  client.print("&");
+    client.print("pak3=");
+    client.print( starline_codePAK1zapis[3]);
+    client.print("&");
+  client.print("&");
+    client.print("pak4=");
+    client.print( starline_codePAK1zapis[4] );
+    client.print("&");
+  client.print("&");
+    client.print("pak5=");
+    client.print( starline_codePAK1zapis[5]);
+    client.print("&");
+  client.print("&");
+    client.print("pak6=");
+    client.print( starline_codePAK1zapis[6]);
+    client.print("&");
+  client.print("&");
+    client.print("pak7=");
+    client.print( starline_codePAK1zapis[7]);
+    client.print("&");
+  client.print("&");
+    client.print("pak8=");
+    client.print( starline_codePAK1zapis[8]);
+
+   
+    client.println( " HTTP/1.1");
+    client.print( "Host:" );    //////www.gansta-paradise.com
+    client.println(host);
+    client.println( "Connection: close" );
+    client.println();
+    client.println();delay(100); }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+    else {
+    // If Arduino can't connect to the server (your computer or web page)
+    Serial.println("--> connection failed\n");
+  }
+   
+   
+
+Serial.println("srabotalo-web");
+
+
+ 
+}
+
+void sendtowebkeyloh(){
+
+
+
+
+ 
+
+
+  WiFiClient client;
+//keyloh p1
+
+///EEPROM.begin(3512);
+
+ prefs.begin("starz", false);
+ 
+
+  prefs.begin("kee", false);
+ prefs.begin("sta", false);
+ 
+ prefs.begin("keez", false);
+
+//keelog_codePAK1zapis[0]=EEPROM.read(50);
+keelog_codePAK1zapis[0]=prefs.getUChar("keez0", 0);
+//  keelog_codePAK1zapis[1]=EEPROM.read(51);
+keelog_codePAK1zapis[1]=prefs.getUChar("keez1", 0);
+ //  keelog_codePAK1zapis[2]=EEPROM.read(52);
+ keelog_codePAK1zapis[2]=prefs.getUChar("keez2", 0);
+ //  keelog_codePAK1zapis[3]=EEPROM.read(53);
+ keelog_codePAK1zapis[3]=prefs.getUChar("keez3", 0);
+//   keelog_codePAK1zapis[4]=EEPROM.read(54);
+keelog_codePAK1zapis[4]=prefs.getUChar("keez4", 0);
+//   keelog_codePAK1zapis[5]=EEPROM.read(55);
+keelog_codePAK1zapis[5]=prefs.getUChar("keez5", 0);
+//   keelog_codePAK1zapis[6]=EEPROM.read(56);
+keelog_codePAK1zapis[6]=prefs.getUChar("keez6", 0);
+//   keelog_codePAK1zapis[7]=EEPROM.read(57);
+keelog_codePAK1zapis[7]=prefs.getUChar("keez7", 0);
+//   keelog_codePAK1zapis[8]=EEPROM.read(58);
+keelog_codePAK1zapis[8]=prefs.getUChar("keez8", 0);
+
+
+
+
+
+
+
+  if (client.connect(host, 80))
+    {
+    client.print( "GET /KING-GRABBER1kee.php?");
+    client.print("pak0=");
+    client.print( keelog_codePAK1zapis[0],HEX );
+   client.print("&");
+  client.print("&");
+    client.print("pak1=");
+    client.print( keelog_codePAK1zapis[1],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak2=");
+    client.print( keelog_codePAK1zapis[2],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak3=");
+    client.print( keelog_codePAK1zapis[3],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak4=");
+    client.print( keelog_codePAK1zapis[4],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak5=");
+    client.print( keelog_codePAK1zapis[5],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak6=");
+    client.print( keelog_codePAK1zapis[6],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak7=");
+    client.print( keelog_codePAK1zapis[7],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak8=");
+    client.print( keelog_codePAK1zapis[8],HEX ); 
+
+
+
+
+   
+    client.println( " HTTP/1.1");
+    client.print( "Host:" );    //////www.gansta-paradise.com
+    client.println(host);
+    client.println( "Connection: close" );
+    client.println();
+    client.println(); }
+//keyloh p1 end/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+delay(100);
+    /////////////////////////////binnnnnnnnnnnnnnnnnnnnn
+
+ 
+
+  if (client.connect(host, 80))
+    {
+    client.print( "GET /KING-GRABBER1keeBIN.php?");
+    client.print("pak0=");
+    client.print( keelog_codePAK1zapis[0] );
+   client.print("&");
+  client.print("&");
+    client.print("pak1=");
+    client.print( keelog_codePAK1zapis[1]);
+    client.print("&");
+  client.print("&");
+    client.print("pak2=");
+    client.print( keelog_codePAK1zapis[2] );
+    client.print("&");
+  client.print("&");
+    client.print("pak3=");
+    client.print( keelog_codePAK1zapis[3] );
+    client.print("&");
+  client.print("&");
+    client.print("pak4=");
+    client.print( keelog_codePAK1zapis[4]);
+    client.print("&");
+  client.print("&");
+    client.print("pak5=");
+    client.print( keelog_codePAK1zapis[5] );
+    client.print("&");
+  client.print("&");
+    client.print("pak6=");
+    client.print( keelog_codePAK1zapis[6]);
+    client.print("&");
+  client.print("&");
+    client.print("pak7=");
+    client.print( keelog_codePAK1zapis[7] );
+    client.print("&");
+  client.print("&");
+    client.print("pak8=");
+    client.print( keelog_codePAK1zapis[8]); 
+
+
+
+
+   
+    client.println( " HTTP/1.1");
+    client.print( "Host:" );    //////www.gansta-paradise.com
+    client.println(host);
+    client.println( "Connection: close" );
+    client.println();
+    client.println(); }
+
+  delay(100); 
+
+
+//keyloh p2/////////////////////////////////////////////////////////////////////////////////////////////
+
+//EEPROM.begin(3512);
+
+ prefs.begin("starz", false);
+ 
+
+  prefs.begin("kee", false);
+ prefs.begin("sta", false);
+ 
+ prefs.begin("keez", false);
+
+// keelog_codePAK2zapis[0]=EEPROM.read(60);
+keelog_codePAK2zapis[0]=prefs.getUChar("keez10", 0);
+ // keelog_codePAK2zapis[1]=EEPROM.read(61);
+ keelog_codePAK2zapis[1]=prefs.getUChar("keez11", 0);
+ //  keelog_codePAK2zapis[2]=EEPROM.read(62);
+ keelog_codePAK2zapis[2]=prefs.getUChar("keez12", 0);
+ //  keelog_codePAK2zapis[3]=EEPROM.read(63);
+ keelog_codePAK2zapis[3]=prefs.getUChar("keez13", 0);
+ //  keelog_codePAK2zapis[4]=EEPROM.read(64);
+ keelog_codePAK2zapis[4]=prefs.getUChar("keez14", 0);
+//   keelog_codePAK2zapis[5]=EEPROM.read(65);
+keelog_codePAK2zapis[5]=prefs.getUChar("keez15", 0);
+//   keelog_codePAK2zapis[6]=EEPROM.read(66);
+keelog_codePAK2zapis[6]=prefs.getUChar("keez16", 0);
+ //  keelog_codePAK2zapis[7]=EEPROM.read(67);
+ keelog_codePAK2zapis[7]=prefs.getUChar("keez17", 0);
+ //  keelog_codePAK2zapis[8]=EEPROM.read(68);
+ keelog_codePAK2zapis[8]=prefs.getUChar("keez18", 0);
+
+
+
+
+
+
+if (client.connect(host, 80))
+    {
+    client.print( "GET /KING-GRABBER2kee.php?");
+    client.print("pak0=");
+    client.print( keelog_codePAK2zapis[0],HEX );
+   client.print("&");
+  client.print("&");
+    client.print("pak1=");
+    client.print( keelog_codePAK2zapis[1],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak2=");
+    client.print( keelog_codePAK2zapis[2],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak3=");
+    client.print( keelog_codePAK2zapis[3],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak4=");
+    client.print( keelog_codePAK2zapis[4],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak5=");
+    client.print( keelog_codePAK2zapis[5],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak6=");
+    client.print( keelog_codePAK2zapis[6],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak7=");
+    client.print( keelog_codePAK2zapis[7],HEX );
+    client.print("&");
+  client.print("&");
+    client.print("pak8=");
+    client.print( keelog_codePAK2zapis[8],HEX ); 
+
+
+
+
+   
+    client.println( " HTTP/1.1");
+    client.print( "Host:" );    //////www.gansta-paradise.com
+    client.println(host);
+    client.println( "Connection: close" );
+    client.println();
+    client.println(); }
+
+delay(100);
+
+
+////////////////////////////////////BIIIIIIIIIIIIIIIIIIINNNNNNNNNNNNNNNNNNNNNN/////////////////////////////
+
+
+if (client.connect(host, 80))
+    {
+    client.print( "GET /KING-GRABBER2keeBIN.php?");
+    client.print("pak0=");
+    client.print( keelog_codePAK2zapis[0] );
+   client.print("&");
+  client.print("&");
+    client.print("pak1=");
+    client.print( keelog_codePAK2zapis[1] );
+    client.print("&");
+  client.print("&");
+    client.print("pak2=");
+    client.print( keelog_codePAK2zapis[2]);
+    client.print("&");
+  client.print("&");
+    client.print("pak3=");
+    client.print( keelog_codePAK2zapis[3]);
+    client.print("&");
+  client.print("&");
+    client.print("pak4=");
+    client.print( keelog_codePAK2zapis[4]);
+    client.print("&");
+  client.print("&");
+    client.print("pak5=");
+    client.print( keelog_codePAK2zapis[5]);
+    client.print("&");
+  client.print("&");
+    client.print("pak6=");
+    client.print( keelog_codePAK2zapis[6]);
+    client.print("&");
+  client.print("&");
+    client.print("pak7=");
+    client.print( keelog_codePAK2zapis[7]);
+    client.print("&");
+  client.print("&");
+    client.print("pak8=");
+    client.print( keelog_codePAK2zapis[8]); 
+
+
+
+
+   
+    client.println( " HTTP/1.1");
+    client.print( "Host:" );    //////www.gansta-paradise.com
+    client.println(host);
+    client.println( "Connection: close" );
+    client.println();
+    client.println(); delay(100);}
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+
+ else {
+    // If Arduino can't connect to the server (your computer or web page)
+    Serial.println("--> connection failed\n");
+  }
+   
+//////////////////keyloh 2 pak end//////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+ 
+}
+
+
+
+
+
+
+
+void starline_sendPAK2zub1(byte* starline_codePAK1zapisSBTR){
+  Serial.println("- sending staraylayn -ss-");
+  for(int i = 0; i<9; i++){
+    Serial.print(starline_codePAK1zapisSBTR[i], HEX);
+    Serial.print(" -zz ");
+  }
+  for(int i = 0; i<13; i++){//посылаем преамблу
+    send_meander(1000);
+  }
+//  digitalWrite(TX, HIGH);
+ // delayMicroseconds(400);
+//  digitalWrite(TX, LOW);
+//  delayMicroseconds(4000);//посылаем хедер
+ 
+  for( int i = 0; i<9; i++){
+    if(decodeMethod==1){
+      for(int i2 = 7;i2>=0;i2--){
+        if(bitRead(starline_codePAK1zapisSBTR[i], i2)){
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(250);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(250);
+        }
+        else{
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(500);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(500);
+        }
+      }
+    }
+    else{
+        for(int i2 = 0;i2<8;i2++){
+          if(!bitRead(starline_codePAK1zapisSBTR[i], i2)){
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(250);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(250);
+          }
+          else{
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(500);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(500);
+          }
+       }
+    }
+   
+  }
+}
+
+
+
+
+void starline_sendPAK2zub2(byte* starline_codePAK2zapisSBTR){
+  Serial.println("- sending staraylayn -ss-");
+  for(int i = 0; i<9; i++){
+    Serial.print(starline_codePAK2zapisSBTR[i], HEX);
+    Serial.print(" -zz ");
+  }
+  for(int i = 0; i<13; i++){//посылаем преамблу
+    send_meander(1000);
+  }
+//  digitalWrite(TX, HIGH);
+ // delayMicroseconds(400);
+//  digitalWrite(TX, LOW);
+//  delayMicroseconds(4000);//посылаем хедер
+ 
+  for( int i = 0; i<9; i++){
+    if(decodeMethod==1){
+      for(int i2 = 7;i2>=0;i2--){
+        if(bitRead(starline_codePAK2zapisSBTR[i], i2)){
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(250);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(250);
+        }
+        else{
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(500);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(500);
+        }
+      }
+    }
+    else{
+        for(int i2 = 0;i2<8;i2++){
+          if(!bitRead(starline_codePAK2zapisSBTR[i], i2)){
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(250);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(250);
+          }
+          else{
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(500);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(500);
+          }
+       }
+    }
+   
+  }
+}
+
+
+void keelog_sendzibaruy(byte* keelog_codePAK1zapisSBTR){
+  Serial.println("- sending keelog -");
+  for(int i = 0; i<9; i++){
+    Serial.print(keelog_codePAK1zapisSBTR[i], HEX);
+    Serial.print(" - ");
+  }
+  for(int i = 0; i<11; i++){//посылаем преамблу
+    send_meander(400);
+  }
+  digitalWrite(TX, HIGH);
+  delayMicroseconds(400);
+  digitalWrite(TX, LOW);
+  delayMicroseconds(4000);//посылаем хедер
+ 
+  for( int i = 0; i<9; i++){
+    if(decodeMethod==1){
+      for(int i2 = 7;i2>=0;i2--){
+        if(bitRead(keelog_codePAK1zapisSBTR[i], i2)){
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(400);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(2*400);
+        }
+        else{
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(2*400);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(400);
+        }
+      }
+    }
+    else{
+        for(int i2 = 0;i2<8;i2++){
+          if(!bitRead(keelog_codePAK1zapisSBTR[i], i2)){
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(400);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(2*400);
+          }
+          else{
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(2*400);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(400);
+          }
+       }
+    }
+   
+  }
+}
+
+
+void keelog_sendzibaruy2(byte* keelog_codePAK2zapisSBTR){
+  Serial.println("- sending keelog -");
+  for(int i = 0; i<9; i++){
+    Serial.print(keelog_codePAK2zapisSBTR[i], HEX);
+    Serial.print(" - ");
+  }
+  for(int i = 0; i<11; i++){//посылаем преамблу
+    send_meander(400);
+  }
+  digitalWrite(TX, HIGH);
+  delayMicroseconds(400);
+  digitalWrite(TX, LOW);
+  delayMicroseconds(4000);//посылаем хедер
+ 
+  for( int i = 0; i<9; i++){
+    if(decodeMethod==1){
+      for(int i2 = 7;i2>=0;i2--){
+        if(bitRead(keelog_codePAK2zapisSBTR[i], i2)){
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(400);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(2*400);
+        }
+        else{
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(2*400);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(400);
+        }
+      }
+    }
+    else{
+        for(int i2 = 0;i2<8;i2++){
+          if(!bitRead(keelog_codePAK2zapisSBTR[i], i2)){
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(400);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(2*400);
+          }
+          else{
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(2*400);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(400);
+          }
+       }
+    }
+   
+  }
+}
+
+
+////////////////////////////////////////////////////////////////bit vvod send//////////////////////////////////////
+
+
+void starline_sendVVOD1(byte* VVOD1){
+  Serial.println("- sending staraylayn -ss-");
+  for(int i = 0; i<9; i++){
+    Serial.print(VVOD1[i], HEX);
+    Serial.print(" -zz ");
+  }
+  for(int i = 0; i<13; i++){//посылаем преамблу
+    send_meander(1000);
+  }
+//  digitalWrite(TX, HIGH);
+ // delayMicroseconds(400);
+//  digitalWrite(TX, LOW);
+//  delayMicroseconds(4000);//посылаем хедер
+ 
+  for( int i = 0; i<9; i++){
+    if(decodeMethod==1){
+      for(int i2 = 7;i2>=0;i2--){
+        if(bitRead(VVOD1[i], i2)){
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(250);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(250);
+        }
+        else{
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(500);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(500);
+        }
+      }
+    }
+    else{
+        for(int i2 = 0;i2<8;i2++){
+          if(!bitRead(VVOD1[i], i2)){
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(250);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(250);
+          }
+          else{
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(500);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(500);
+          }
+       }
+    }
+   
+  }
+}
+
+
+
+void starline_sendVVOD2(byte* VVOD1){
+  Serial.println("- sending staraylayn -ss-");
+  for(int i = 0; i<9; i++){
+    Serial.print(VVOD2[i], HEX);
+    Serial.print(" -zz ");
+  }
+  for(int i = 0; i<13; i++){//посылаем преамблу
+    send_meander(1000);
+  }
+//  digitalWrite(TX, HIGH);
+ // delayMicroseconds(400);
+//  digitalWrite(TX, LOW);
+//  delayMicroseconds(4000);//посылаем хедер
+ 
+  for( int i = 0; i<9; i++){
+    if(decodeMethod==1){
+      for(int i2 = 7;i2>=0;i2--){
+        if(bitRead(VVOD2[i], i2)){
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(250);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(250);
+        }
+        else{
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(500);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(500);
+        }
+      }
+    }
+    else{
+        for(int i2 = 0;i2<8;i2++){
+          if(!bitRead(VVOD2[i], i2)){
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(250);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(250);
+          }
+          else{
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(500);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(500);
+          }
+       }
+    }
+   
+  }
+}
+
+/////////////////////////////keevvod///////////////////////////////////
+
+
+void keelog_sendVVOD1(byte* VVOD1){
+  Serial.println("- sending keelog -");
+  for(int i = 0; i<9; i++){
+    Serial.print(VVOD1[i], HEX);
+    Serial.print(" - ");
+  }
+  for(int i = 0; i<11; i++){//посылаем преамблу
+    send_meander(400);
+  }
+  digitalWrite(TX, HIGH);
+  delayMicroseconds(400);
+  digitalWrite(TX, LOW);
+  delayMicroseconds(4000);//посылаем хедер
+ 
+  for( int i = 0; i<9; i++){
+    if(decodeMethod==1){
+      for(int i2 = 7;i2>=0;i2--){
+        if(bitRead(VVOD1[i], i2)){
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(400);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(2*400);
+        }
+        else{
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(2*400);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(400);
+        }
+      }
+    }
+    else{
+        for(int i2 = 0;i2<8;i2++){
+          if(!bitRead(VVOD1[i], i2)){
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(400);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(2*400);
+          }
+          else{
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(2*400);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(400);
+          }
+       }
+    }
+   
+  }
+}
+
+//////////////////////////////////////22222222222222222222222222//////////////////////////////////////
+
+void keelog_sendVVOD2(byte* VVOD2){
+  Serial.println("- sending keelog -");
+  for(int i = 0; i<9; i++){
+    Serial.print(VVOD2[i], HEX);
+    Serial.print(" - ");
+  }
+  for(int i = 0; i<11; i++){//посылаем преамблу
+    send_meander(400);
+  }
+  digitalWrite(TX, HIGH);
+  delayMicroseconds(400);
+  digitalWrite(TX, LOW);
+  delayMicroseconds(4000);//посылаем хедер
+ 
+  for( int i = 0; i<9; i++){
+    if(decodeMethod==1){
+      for(int i2 = 7;i2>=0;i2--){
+        if(bitRead(VVOD2[i], i2)){
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(400);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(2*400);
+        }
+        else{
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(2*400);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(400);
+        }
+      }
+    }
+    else{
+        for(int i2 = 0;i2<8;i2++){
+          if(!bitRead(VVOD2[i], i2)){
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(400);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(2*400);
+          }
+          else{
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(2*400);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(400);
+          }
+       }
+    }
+   
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////WEB READE//////////////////////////////////////////////////////////
+void webcoderead()
+{
+     
+display.setCursor(0, 0);
+ display.setTextSize(1); 
+display.print(" "); 
+    display.print("webread");
+    display.display();
+
+
+
+ 
+    HTTPClient http;  //Declare an object of class HTTPClient
+ 
+    http.begin("http://gansta-paradise.com/king-codes/pak1.txt");  //Specify request destination
+    int httpCode = http.GET();                                                                  //Send the request
+ 
+    if (httpCode > 0) { //Check the returning code
+ 
+      String payload = http.getString();   //Get the request response payload
+
+   //    String payload2 = http.getString(); 
+    ///  Serial.println(payload);                     //Print the response payload
+
+
+
+    char pak1[100];
+payload.toCharArray(pak1, 30);
+
+//int xweb;
+//int zyuio[3] = {pak1[0],pak1[1],pak1[2]};
+
+///xweb = zyuio[3];
+
+
+///char* pak11[10];
+
+
+
+
+char* p = pak1;
+char* str333;
+int i = 0;
+while ((str333 = strtok_r(p, ";", &p)) != NULL) {
+
+////  display.println(str333);
+int zoka = atoi(str333);
+     
+//  EEPROM.begin(3512);
+//EEPROM.write(200+i, zoka);
+ //    EEPROM.commit();
+ //     EEPROM.end();
+///display.println(pak1[i]);
+  i++;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+     
+//  EEPROM.begin(3512);
+
+//webpak1[0]=EEPROM.read(200);
+//  webpak1[1]=EEPROM.read(201);
+//  webpak1[2]=EEPROM.read(202);
+//   webpak1[3]=EEPROM.read(203);
+//  webpak1[4]=EEPROM.read(204);
+ //  webpak1[5]=EEPROM.read(205);
+ //  webpak1[6]=EEPROM.read(206);
+//  webpak1[7]=EEPROM.read(207);
+//   webpak1[8]=EEPROM.read(208);
+
+
+
+
+
+
+
+
+
+      //display.clearDisplay();
+      display.setTextColor( WHITE);
+display.setCursor(0, 20);
+ display.setTextSize(0.1);
+ display.print("pak1");
+ display.print("-");   
+  // EEPROM.begin(3512); 
+  //  display.print(EEPROM.read(200),HEX);
+ //   display.print(EEPROM.read(201),HEX);
+ //   display.print(EEPROM.read(202),HEX);
+ //   display.print(EEPROM.read(203),HEX);
+//    display.print(EEPROM.read(204),HEX);
+//    display.print(EEPROM.read(205),HEX);
+//    display.print(EEPROM.read(206),HEX);
+ //   display.print(EEPROM.read(207),HEX);
+ //   display.print(EEPROM.read(208),HEX);
+    display.display();
+ 
+    }
+ 
+    http.end();   //Close connection
+
+
+
+
+
+// for(int i = 0; i<9; i++){
+     
+
+   
+//     display.print(webpak1[i],HEX);
+ //     delay(3);
+// /   
+ //     display.display();
+     
+     
+   
+     
+ // }
+
+   
+ 
+ 
+ 
+  delay(3000);    //Send a request every 30 seconds
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+///HTTPClient http;  //Declare an object of class HTTPClient
+ 
+    http.begin("http://gansta-paradise.com/king-codes/pak2.txt");  //Specify request destination
+    int httpCode2 = http.GET();                                                                  //Send the request
+ 
+    if (httpCode2 > 0) { //Check the returning code
+ 
+      String payload2 = http.getString();   //Get the request response payload
+
+   //    String payload2 = http.getString(); 
+    ///  Serial.println(payload);                     //Print the response payload
+
+     char pak2[100];
+payload2.toCharArray(pak2, 30);
+
+
+char* p2 = pak2;
+char* str3333;
+int i = 0;
+while ((str3333 = strtok_r(p2, ";", &p2)) != NULL) {
+
+////  display.println(str333);
+int zoka2 = atoi(str3333);
+     
+//  EEPROM.begin(3512);
+//EEPROM.write(210+i, zoka2);
+  //   EEPROM.commit();
+  //    EEPROM.end();
+///display.println(pak1[i]);
+  i++;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     
+//    EEPROM.begin(3512);
+
+ //  webpak2[0]=EEPROM.read(210);
+//  webpak2[1]=EEPROM.read(211);
+//  webpak2[2]=EEPROM.read(212);
+//   webpak2[3]=EEPROM.read(213);
+ // webpak2[4]=EEPROM.read(214);
+//   webpak2[5]=EEPROM.read(215);
+//   webpak2[6]=EEPROM.read(216);
+ // webpak2[7]=EEPROM.read(217);
+ //  webpak2[8]=EEPROM.read(218);
+
+
+
+      //display.clearDisplay();
+      display.setTextColor( WHITE);
+display.setCursor(0, 40);
+ display.setTextSize(0.3);
+  display.println();
+  display.print("pak2");
+  display.print("-");   
+///    EEPROM.begin(3512); 
+ //   display.print(EEPROM.read(210),HEX);
+ //   display.print(EEPROM.read(211),HEX);
+ //   display.print(EEPROM.read(212),HEX);
+//    display.print(EEPROM.read(213),HEX);
+//    display.print(EEPROM.read(214),HEX);
+//    display.print(EEPROM.read(215),HEX);
+//    display.print(EEPROM.read(216),HEX);
+//    display.print(EEPROM.read(217),HEX);
+ //   display.print(EEPROM.read(218),HEX);
+    display.display();
+ 
+    }
+ 
+    http.end();   //Close connection
+ 
+ 
+
+
+// for(int i = 0; i<9; i++){
+     
+
+   
+ //    display.print(webpak2[i],HEX);
+ //     delay(3);
+     
+ //     display.display();
+     
+     
+   
+     
+ // }
+
+ 
+  delay(3000);    //Send a request every 30 seconds
+ 
+ 
+}
+
+
+//////////////////////////////////////////////////////////////////////END WEB CODE READ////////////////////////////////////////////////////////////////////////
+
+
+
+
+/////////////////////////////////////////////////////////////////web codeb send/////////////////////////////////////
+
+
+void starline_sendwebpak1(byte* webpak1){
+  Serial.println("- sending staraylayn -ss-");
+  for(int i = 0; i<9; i++){
+    Serial.print(webpak1[i], HEX);
+    Serial.print(" -zz ");
+  }
+  for(int i = 0; i<13; i++){//посылаем преамблу
+    send_meander(1000);
+  }
+//  digitalWrite(TX, HIGH);
+ // delayMicroseconds(400);
+//  digitalWrite(TX, LOW);
+//  delayMicroseconds(4000);//посылаем хедер
+ 
+  for( int i = 0; i<9; i++){
+    if(decodeMethod==1){
+      for(int i2 = 7;i2>=0;i2--){
+        if(bitRead(webpak1[i], i2)){
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(250);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(250);
+        }
+        else{
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(500);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(500);
+        }
+      }
+    }
+    else{
+        for(int i2 = 0;i2<8;i2++){
+          if(!bitRead(webpak1[i], i2)){
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(250);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(250);
+          }
+          else{
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(500);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(500);
+          }
+       }
+    }
+   
+  }
+}
+
+
+
+
+
+void starline_sendwebpak2(byte* webpak2){
+  Serial.println("- sending staraylayn -ss-");
+  for(int i = 0; i<9; i++){
+    Serial.print(webpak2[i], HEX);
+    Serial.print(" -zz ");
+  }
+  for(int i = 0; i<13; i++){//посылаем преамблу
+    send_meander(1000);
+  }
+//  digitalWrite(TX, HIGH);
+ // delayMicroseconds(400);
+//  digitalWrite(TX, LOW);
+//  delayMicroseconds(4000);//посылаем хедер
+ 
+  for( int i = 0; i<9; i++){
+    if(decodeMethod==1){
+      for(int i2 = 7;i2>=0;i2--){
+        if(bitRead(webpak2[i], i2)){
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(250);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(250);
+        }
+        else{
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(500);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(500);
+        }
+      }
+    }
+    else{
+        for(int i2 = 0;i2<8;i2++){
+          if(!bitRead(webpak2[i], i2)){
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(250);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(250);
+          }
+          else{
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(500);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(500);
+          }
+       }
+    }
+   
+  }
+}
+
+
+
+void keelog_sendwebpak1(byte* webpak1){
+  Serial.println("- sending keelog -");
+  for(int i = 0; i<9; i++){
+    Serial.print(webpak1[i], HEX);
+    Serial.print(" - ");
+  }
+  for(int i = 0; i<11; i++){//посылаем преамблу
+    send_meander(400);
+  }
+  digitalWrite(TX, HIGH);
+  delayMicroseconds(400);
+  digitalWrite(TX, LOW);
+  delayMicroseconds(4000);//посылаем хедер
+ 
+  for( int i = 0; i<9; i++){
+    if(decodeMethod==1){
+      for(int i2 = 7;i2>=0;i2--){
+        if(bitRead(webpak1[i], i2)){
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(400);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(2*400);
+        }
+        else{
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(2*400);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(400);
+        }
+      }
+    }
+    else{
+        for(int i2 = 0;i2<8;i2++){
+          if(!bitRead(webpak1[i], i2)){
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(400);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(2*400);
+          }
+          else{
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(2*400);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(400);
+          }
+       }
+    }
+   
+  }
+
+}
+
+
+
+
+
+  void keelog_sendwebpak2(byte* webpak2){
+  Serial.println("- sending keelog -");
+  for(int i = 0; i<9; i++){
+    Serial.print(webpak2[i], HEX);
+    Serial.print(" - ");
+  }
+  for(int i = 0; i<11; i++){//посылаем преамблу
+    send_meander(400);
+  }
+  digitalWrite(TX, HIGH);
+  delayMicroseconds(400);
+  digitalWrite(TX, LOW);
+  delayMicroseconds(4000);//посылаем хедер
+ 
+  for( int i = 0; i<9; i++){
+    if(decodeMethod==1){
+      for(int i2 = 7;i2>=0;i2--){
+        if(bitRead(webpak2[i], i2)){
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(400);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(2*400);
+        }
+        else{
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(2*400);
+          digitalWrite(TX, LOW);
+          delayMicroseconds(400);
+        }
+      }
+    }
+    else{
+        for(int i2 = 0;i2<8;i2++){
+          if(!bitRead(webpak2[i], i2)){
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(400);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(2*400);
+          }
+          else{
+            digitalWrite(TX, HIGH);
+            delayMicroseconds(2*400);
+            digitalWrite(TX, LOW);
+            delayMicroseconds(400);
+          }
+       }
+    }
+   
+  }
+
+  }
+
+////////////////////////////////////////////////////////parol //////////////////////////////////////////////////////////////////
+
+void parol(){
+
+ display.clearDisplay();
+display.setCursor(0, 0);
+ display.setTextSize(1);   
+display.print("VVEDI PAROL");
+ display.display();
+ delay(1000);
+
+ 
+
+
+ while(parolking<3){
+
+ display.clearDisplay();
+ display.setCursor(0, 0);
+display.println();
+display.print(parolvvod[0]);
+display.print(parolvvod[1]);
+display.print(parolvvod[2]);
+display.print(parolvvod[3]);
+display.print(parolvvod[4]);
+display.print(parolvvod[5]);
+///display.print(parolvvod[3]);
+display.println();
+display.print(i1p);
+display.print("-");
+display.print(yach);
+ 
+ display.display();
+delay(10);
+
+if(digitalRead(D12)==LOW){
+
+delay(100);
+  i1p++;
+
+ if(i1p>9){
+
+i1p=0;
+ 
+}
+
+if(i1p<1){
+
+i1p=0;
+ 
+}
+
+ 
+}
+
+if(digitalRead(D13)==LOW){
+
+
+delay(100);
+parolvvod[yach] = i1p;
+ 
+}
+
+if(digitalRead(D14)==LOW){
+
+
+delay(100);
+i1p--;
+
+if(i1p>9){
+
+i1p=0;
+ 
+}
+
+if(i1p<0){
+
+i1p=9;
+ 
+}
+
+ 
+}
+
+
+
+
+if(digitalRead(D13)==LOW&&digitalRead(D14)==LOW){
+
+yach++;
+ delay(1000);
+
+if(yach>=6){
+
+yach=0;
+ 
+}
+
+ 
+}
+
+
+
+
+if(parolvvod[0]==passwordkg[0]&&parolvvod[1]==passwordkg[1]&&parolvvod[2]==passwordkg[2]&&parolvvod[3]==passwordkg[3]&&parolvvod[4]==passwordkg[4]&&parolvvod[5]==passwordkg[5]){
+
+
+parolking++;
+delay(10);
+display.clearDisplay();
+display.setCursor(0, 0);
+ display.setTextSize(3);   
+display.print("URA");
+
+if(parolking==3){
+ display.setTextSize(2);
+ display.println();
+display.println("smert`");
+display.println("vafelam");
+
+ 
+}
+
+
+ display.display();
+
+ 
+}
+
+
+
+
+if(parolvvod[4]!=passwordkg[4]){
+
+
+display.setCursor(0, 40);
+ display.setTextSize(1);   
+display.print("ne tot parol pituh");
+ display.display();
+ delay(10);
+
+ 
+}
+
+delay(100);
+
+
+   
+  }
+
+
+
+ delay(100);
+
+
+ 
+}
+
+
+
+
+
+
+
+///////////////////////////////////////////////shlak baumi//////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+void came_brut(){
+
+
+
+  display.clearDisplay();
+display.setCursor(0, 0);
+ display.setTextSize(1);   
+display.print("CAME-BRUT");
+display.println();
+display.display();
+
+if(digitalRead(D14)==LOW){
+
+shlak();
+send_code++;
+}
+
+
+if(digitalRead(D12)==LOW){
+
+shlak();
+send_code--;
+}
+ 
+
+   
+}
+
+/////////////////////////////////////////////////////pam pam pam////////////////////////////////////////////////////////////////////////////////////
+void PAMEHA(){
+
+ display.clearDisplay();
+display.setCursor(0, 0);
+ display.setTextSize(1);   
+display.print("pameha");
+display.println();
+display.print(pam);
+display.print("hz");
+display.display();
+
+
+digitalWrite(TX,HIGH);
+delay(pam);
+digitalWrite (TX, LOW) ;
+delay(pam);
+digitalWrite(TX,HIGH);
+delay(pam);
+digitalWrite (TX, LOW) ;
+delay(pam);
+
+digitalWrite(TX,HIGH);
+delay(pam);
+digitalWrite (TX, LOW) ;
+delay(pam);
+
+digitalWrite(TX,HIGH);
+delay(pam);
+digitalWrite (TX, LOW) ;
+delay(pam);
+
+digitalWrite(TX,HIGH);
+delay(pam);
+digitalWrite (TX, LOW) ;
+delay(pam);
+
+digitalWrite(TX,HIGH);
+delay(pam);
+digitalWrite (TX, LOW) ;
+delay(pam);
+
+
+
+
+if(digitalRead(D12)==LOW){
+
+pam++;
+ 
+}
+
+if(digitalRead(D12)==LOW&&digitalRead(D14)==LOW){
+
+pam = pam+10;
+
+/// tone(TX, 1300, 156.2499375);
+ 
+}
+
+
+if(digitalRead(D14)==LOW){
+
+pam--;
+
+
+if(pam<1){
+
+pam = 0;
+ 
+}
+
+
+
+ 
+}
+
+
+
+
+
+
+ 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+//////////////////////////////
+
+void shlak()
+{
+ 
+
+display.setCursor(0, 30);
+   display.setTextSize(1);   
+
+display.println(send_code);
+display.display();
+
+
+   
+    for (int j = 0; j <4; j++) // достаточно 4-х, но из-за помех поставил 7
+    {
+      digitalWrite(TX, HIGH); // стартовый импульс
+      delayMicroseconds(700);
+      digitalWrite(TX, LOW);
+      for (int i = 12; i > 0; i--)
+      {
+        boolean bit_code = bitRead(send_code, i - 1);
+        if (bit_code)
+        {
+          digitalWrite(TX, LOW); // единица
+          delayMicroseconds(1400);
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(700);
+        }
+        else
+        {
+          digitalWrite(TX, LOW); // ноль
+          delayMicroseconds(700);
+          digitalWrite(TX, HIGH);
+          delayMicroseconds(1400);
+        }
+      }
+      digitalWrite(TX, LOW); // пилотный период
+      delayMicroseconds(25200);
+    }
+ 
+  delay(10000);
+
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
